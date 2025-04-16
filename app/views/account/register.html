@@ -1,272 +1,335 @@
 <!DOCTYPE html>
 <html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Đăng ký - Tour Du Lịch</title>
     <style>
-        :root {
-            --primary: #4CAF50;
-            --secondary: #2a5885;
-            --text: #333;
-            --light: #f8f9fa;
-            --border: #dee2e6;
-        }
-        
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        body {
-            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), 
-                        url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e');
-            background-size: cover;
-            background-position: center;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-        
+      :root {
+        --primary: #4caf50;
+        --secondary: #2a5885;
+        --text: #333;
+        --light: #f8f9fa;
+        --border: #dee2e6;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
+
+      body {
+        background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
+          url("https://images.unsplash.com/photo-1507525428034-b723cf961d3e");
+        background-size: cover;
+        background-position: center;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+      }
+
+      .register-card {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 450px;
+        overflow: hidden;
+      }
+
+      .register-header {
+        background: var(--secondary);
+        color: white;
+        padding: 20px;
+        text-align: center;
+      }
+
+      .register-header h2 {
+        font-size: 1.8rem;
+        margin-bottom: 5px;
+      }
+
+      .register-header p {
+        font-size: 0.9rem;
+        opacity: 0.9;
+      }
+
+      .register-body {
+        padding: 25px;
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        color: var(--text);
+        font-weight: 500;
+      }
+
+      .form-control {
+        width: 100%;
+        padding: 12px 15px;
+        border: 1px solid var(--border);
+        border-radius: 5px;
+        font-size: 1rem;
+        transition: all 0.3s;
+      }
+
+      .form-control:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
+        outline: none;
+      }
+
+      .password-strength {
+        height: 5px;
+        background: #eee;
+        border-radius: 5px;
+        margin-top: 5px;
+        overflow: hidden;
+      }
+
+      .strength-meter {
+        height: 100%;
+        width: 0;
+        background: #e74c3c;
+        transition: all 0.3s;
+      }
+
+      .terms {
+        display: flex;
+        align-items: flex-start;
+        margin: 20px 0;
+      }
+
+      .terms input {
+        margin-right: 10px;
+        margin-top: 3px;
+      }
+
+      .terms label {
+        font-size: 0.9rem;
+        color: var(--text);
+      }
+
+      .terms a {
+        color: var(--secondary);
+        text-decoration: none;
+      }
+
+      .btn-register {
+        width: 100%;
+        padding: 12px;
+        background: var(--primary);
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.3s;
+      }
+
+      .btn-register:hover {
+        background: #3e8e41;
+      }
+
+      .login-link {
+        text-align: center;
+        margin-top: 20px;
+        color: var(--text);
+      }
+
+      .login-link a {
+        color: var(--secondary);
+        text-decoration: none;
+        font-weight: 500;
+      }
+
+      /* Responsive */
+      @media (max-width: 576px) {
         .register-card {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            width: 100%;
-            max-width: 450px;
-            overflow: hidden;
+          border-radius: 0;
         }
-        
-        .register-header {
-            background: var(--secondary);
-            color: white;
-            padding: 20px;
-            text-align: center;
+
+        body {
+          padding: 0;
+          align-items: flex-start;
         }
-        
-        .register-header h2 {
-            font-size: 1.8rem;
-            margin-bottom: 5px;
-        }
-        
-        .register-header p {
-            font-size: 0.9rem;
-            opacity: 0.9;
-        }
-        
-        .register-body {
-            padding: 25px;
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: var(--text);
-            font-weight: 500;
-        }
-        
-        .form-control {
-            width: 100%;
-            padding: 12px 15px;
-            border: 1px solid var(--border);
-            border-radius: 5px;
-            font-size: 1rem;
-            transition: all 0.3s;
-        }
-        
-        .form-control:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
-            outline: none;
-        }
-        
-        .password-strength {
-            height: 5px;
-            background: #eee;
-            border-radius: 5px;
-            margin-top: 5px;
-            overflow: hidden;
-        }
-        
-        .strength-meter {
-            height: 100%;
-            width: 0;
-            background: #e74c3c;
-            transition: all 0.3s;
-        }
-        
-        .terms {
-            display: flex;
-            align-items: flex-start;
-            margin: 20px 0;
-        }
-        
-        .terms input {
-            margin-right: 10px;
-            margin-top: 3px;
-        }
-        
-        .terms label {
-            font-size: 0.9rem;
-            color: var(--text);
-        }
-        
-        .terms a {
-            color: var(--secondary);
-            text-decoration: none;
-        }
-        
-        .btn-register {
-            width: 100%;
-            padding: 12px;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        
-        .btn-register:hover {
-            background: #3e8e41;
-        }
-        
-        .login-link {
-            text-align: center;
-            margin-top: 20px;
-            color: var(--text);
-        }
-        
-        .login-link a {
-            color: var(--secondary);
-            text-decoration: none;
-            font-weight: 500;
-        }
-        
-        /* Responsive */
-        @media (max-width: 576px) {
-            .register-card {
-                border-radius: 0;
-            }
-            
-            body {
-                padding: 0;
-                align-items: flex-start;
-            }
-        }
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="register-card">
-        <div class="register-header">
-            <h2>Tạo tài khoản mới</h2>
-            <p>Khám phá thế giới cùng chúng tôi</p>
-        </div>
-        
-        <div class="register-body">
-            <form id="registerForm">
-                <div class="form-group">
-                    <label for="fullname">Họ và tên</label>
-                    <input type="text" name="fullname" id="fullname" class="form-control" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="email" name="email" id="email" class="form-control" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="phone">Số điện thoại</label>
-                    <input type="tel" name="phone" id="phone" class="form-control" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="password">Mật khẩu</label>
-                    <input type="password" name="password" id="password" class="form-control" required>
-                    <div class="password-strength">
-                        <div class="strength-meter" id="strengthMeter"></div>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="confirmPassword">Xác nhận mật khẩu</label>
-                    <input type="password" name="confirmPassword" id="confirmPassword" class="form-control" required>
-                </div>
-                
-                <div class="terms">
-                    <input type="checkbox" id="agreeTerms" required>
-                    <label for="agreeTerms">Tôi đồng ý với <a href="#">Điều khoản dịch vụ</a> và <a href="#">Chính sách bảo mật</a></label>
-                </div>
-                
-                <button type="submit" class="btn-register">Đăng ký</button>
-            </form>
-            
-            <div class="login-link">
-                Đã có tài khoản? <a href="/account/login">Đăng nhập ngay</a>
+      <div class="register-header">
+        <h2>Tạo tài khoản mới</h2>
+        <p>Khám phá thế giới cùng chúng tôi</p>
+      </div>
+
+      <div class="register-body">
+        <form id="registerForm">
+          <div class="form-group">
+            <label for="fullname">Họ và tên</label>
+            <input
+              type="text"
+              name="fullname"
+              id="fullname"
+              class="form-control"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input
+              type="email"
+              name="email"
+              id="email"
+              class="form-control"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="phone">Số điện thoại</label>
+            <input
+              type="tel"
+              name="phone"
+              id="phone"
+              class="form-control"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="password">Mật khẩu</label>
+            <input
+              type="password"
+              name="password"
+              id="password"
+              class="form-control"
+              required
+            />
+            <div class="password-strength">
+              <div class="strength-meter" id="strengthMeter"></div>
             </div>
+          </div>
+
+          <div class="form-group">
+            <label for="confirmPassword">Xác nhận mật khẩu</label>
+            <input
+              type="password"
+              name="confirmPassword"
+              id="confirmPassword"
+              class="form-control"
+              required
+            />
+          </div>
+
+          <div class="terms">
+            <input type="checkbox" id="agreeTerms" required />
+            <label for="agreeTerms"
+              >Tôi đồng ý với <a href="#">Điều khoản dịch vụ</a> và
+              <a href="#">Chính sách bảo mật</a></label
+            >
+          </div>
+
+          <button type="submit" class="btn-register">Đăng ký</button>
+        </form>
+
+        <div class="login-link">
+          Đã có tài khoản? <a href="/account/login">Đăng nhập ngay</a>
         </div>
+      </div>
     </div>
 
     <script>
-        // Password strength indicator
-        const passwordInput = document.getElementById('password');
-        const strengthMeter = document.getElementById('strengthMeter');
-        
-        passwordInput.addEventListener('input', function() {
-            const password = this.value;
-            let strength = 0;
-            
-            if (password.length >= 8) strength += 1;
-            if (password.match(/[a-z]/)) strength += 1;
-            if (password.match(/[A-Z]/)) strength += 1;
-            if (password.match(/[0-9]/)) strength += 1;
-            if (password.match(/[^a-zA-Z0-9]/)) strength += 1;
-            
-            // Update meter
-            const width = strength * 20;
-            strengthMeter.style.width = width + '%';
-            
-            // Update color
-            if (strength <= 1) {
-                strengthMeter.style.backgroundColor = '#e74c3c';
-            } else if (strength <= 3) {
-                strengthMeter.style.backgroundColor = '#f39c12';
+      // Password strength indicator
+      const passwordInput = document.getElementById("password");
+      const strengthMeter = document.getElementById("strengthMeter");
+
+      passwordInput.addEventListener("input", function () {
+        const password = this.value;
+        let strength = 0;
+
+        if (password.length >= 8) strength += 1;
+        if (password.match(/[a-z]/)) strength += 1;
+        if (password.match(/[A-Z]/)) strength += 1;
+        if (password.match(/[0-9]/)) strength += 1;
+        if (password.match(/[^a-zA-Z0-9]/)) strength += 1;
+
+        // Update meter
+        const width = strength * 20;
+        strengthMeter.style.width = width + "%";
+
+        // Update color
+        if (strength <= 1) {
+          strengthMeter.style.backgroundColor = "#e74c3c";
+        } else if (strength <= 3) {
+          strengthMeter.style.backgroundColor = "#f39c12";
+        } else {
+          strengthMeter.style.backgroundColor = "#2ecc71";
+        }
+      });
+
+      // Form validation
+      document
+        .getElementById("registerForm")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+
+          const fullname = document.getElementById("fullname").value;
+          const email = document.getElementById("email").value;
+          const phone = document.getElementById("phone").value;
+          const password = document.getElementById("password").value;
+          const confirmPassword =
+            document.getElementById("confirmPassword").value;
+          const agreeTerms = document.getElementById("agreeTerms").checked;
+
+          if (password !== confirmPassword) {
+            alert("Mật khẩu xác nhận không khớp!");
+            return;
+          }
+
+          if (!agreeTerms) {
+            alert("Vui lòng đồng ý với điều khoản dịch vụ!");
+            return;
+          }
+
+          try {
+            const response = await fetch("/account/register", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+              },
+              body: new URLSearchParams({
+                fullname,
+                email,
+                phone,
+                password,
+              }),
+            });
+
+            const result = await response.text();
+
+            if (response.ok) {
+              alert( result);
+              window.location.href = "/account/login";
             } else {
-                strengthMeter.style.backgroundColor = '#2ecc71';
+              alert( result);
             }
-        });
-        
-        // Form validation
-        document.getElementById('registerForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const password = document.getElementById('password').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
-            
-            if (password !== confirmPassword) {
-                alert('Mật khẩu xác nhận không khớp!');
-                return;
-            }
-            
-            if (!document.getElementById('agreeTerms').checked) {
-                alert('Vui lòng đồng ý với điều khoản dịch vụ!');
-                return;
-            }
-            
-            // Form is valid, proceed with registration
-            alert('Đăng ký thành công!');
-            // Here you would typically submit the form to your backend
+          } catch (error) {
+            console.error("Lỗi fetch:", error);
+            alert("Lỗi kết nối đến máy chủ!");
+          }
         });
     </script>
-</body>
+  </body>
 </html>
