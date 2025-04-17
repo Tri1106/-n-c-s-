@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi Tiết Tour</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #333;
+            padding: 20px;
+        }
+
+        .tour-detail {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .tour-image {
+            width: 100%;
+            height: 300px;
+            background-size: cover;
+            background-position: center;
+            border-radius: 8px;
+        }
+
+        .tour-info h2 {
+            color: #2a5885;
+        }
+
+        .tour-price {
+            font-size: 1.5rem;
+            color: #4CAF50;
+            margin: 10px 0;
+        }
+
+        .back-btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="tour-detail">
+        <div class="tour-image" style="background-image: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e');"></div>
+        <div class="tour-info">
+            <h2>Tour Đà Nẵng - Hội An</h2>
+            <div class="tour-price">Giá: 5.990.000 VNĐ</div>
+            <p>Chi tiết về tour Đà Nẵng - Hội An sẽ được hiển thị ở đây.</p>
+            <button class="back-btn" onclick="window.history.back()">Quay lại</button>
+        </div>
+    </div>
+</body>
+</html>
