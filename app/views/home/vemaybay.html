@@ -1,38 +1,31 @@
-<div class="form-fields" style="display:none;">
+<div class="form-fields" style="display: none;">
     <!-- Vé máy bay form -->
-    <div style="flex: 2 1 300px;">
-        <label><strong>Chuyến bay đi từ <span style="color: red">*</span></strong><br>
-            <span style="font-weight: normal; font-size: 0.9rem; color: gray;">Chọn sân bay hoặc thành phố khởi hành</span>
-        </label>
-        <input type="text" placeholder="Hà Nội, TP. Hồ Chí Minh, Đà Nẵng...">
+    <div style="flex: 1 1 100%;">
+        <label><strong>Điểm đi <span style="color: red">*</span></strong></label><br>
+        <input type="text" placeholder="Thành phố, sân bay">
     </div>
-    <div style="flex: 2 1 300px;">
-        <label><strong>Đến <span style="color: red">*</span></strong><br>
-            <span style="font-weight: normal; font-size: 0.9rem; color: gray;">Chọn sân bay hoặc thành phố đến</span>
-        </label>
-        <input type="text" placeholder="Nha Trang, Phú Quốc...">
+    <div style="flex: 1 1 100%;">
+        <label><strong>Điểm đến <span style="color: red">*</span></strong></label><br>
+        <input type="text" placeholder="Thành phố, sân bay">
+    </div>
+    <div style="flex: 1 1 100%; display: flex; gap: 20px; align-items: center;">
+        <label><input type="checkbox" checked> Khứ hồi</label>
+        <label><input type="checkbox"> Một chiều</label>
     </div>
     <div>
         <label><strong>Ngày đi</strong></label><br>
-        <input type="date" id="flight-date" value="2025-04-20">
+        <input type="date" value="2025-04-20">
     </div>
     <div>
-        <label><strong>Ngày về (nếu có)</strong></label><br>
-        <input type="date" id="return-date">
+        <label><strong>Ngày về</strong></label><br>
+        <input type="date" value="2025-04-23">
     </div>
     <div>
-        <label><strong>Hạng vé</strong></label><br>
-        <select>
-            <option value="economy">Hạng phổ thông</option>
-            <option value="business">Hạng thương gia</option>
-            <option value="first-class">Hạng nhất</option>
-        </select>
+        <label><strong>Số khách</strong></label><br>
+        <input type="text" value="1 người lớn" readonly>
     </div>
     <div>
-        <label><strong>Số lượng hành khách</strong></label><br>
-        <input type="number" value="1" min="1" max="10">
-    </div>
-    <div>
-        <button class="search-btn"><i class="fas fa-search"></i> Tìm kiếm vé</button>
+        <button class="search-btn"><i class="fas fa-search"></i> Tìm chuyến bay</button>
     </div>
 </div>
+

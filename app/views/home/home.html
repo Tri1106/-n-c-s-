@@ -264,7 +264,40 @@
                     </button>
                 </div>
             </div>
+            <div class="form-fields" style="display: none;">
+                <!-- Vé máy bay form -->
+                <div style="flex: 1 1 100%;">
+                    <label><strong>Điểm đi <span style="color: red">*</span></strong></label><br>
+                    <input type="text" placeholder="Thành phố, sân bay">
+                </div>
+                <div style="flex: 1 1 100%;">
+                    <label><strong>Điểm đến <span style="color: red">*</span></strong></label><br>
+                    <input type="text" placeholder="Thành phố, sân bay">
+                </div>
+                <div style="flex: 1 1 100%; display: flex; gap: 20px; align-items: center;">
+                    <label><input type="checkbox" checked> Khứ hồi</label>
+                    <label><input type="checkbox"> Một chiều</label>
+                </div>
+                <div>
+                    <label><strong>Ngày đi</strong></label><br>
+                    <input type="date" value="2025-04-20">
+                </div>
+                <div>
+                    <label><strong>Ngày về</strong></label><br>
+                    <input type="date" value="2025-04-23">
+                </div>
+                <div>
+                    <label><strong>Số khách</strong></label><br>
+                    <input type="text" value="1 người lớn" readonly>
+                </div>
+                <div>
+                    <button class="search-btn"><i class="fas fa-search"></i> Tìm chuyến bay</button>
+                </div>
+            </div>
+            
+            
         </div>
+        
     </section>
 
     <!-- Popular Destinations -->
