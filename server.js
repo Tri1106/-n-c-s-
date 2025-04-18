@@ -1,7 +1,15 @@
 const express = require("express");
+const session = require("express-session");
 const app = express();
 const port = 3000;
 
+app.use(
+  session({
+    secret: "ban-muon-gi-cung-duoc",
+    resave: false,
+    saveUninitialized: true,
+  })
+);
 // Cấu hình middleware
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());

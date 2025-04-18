@@ -3,12 +3,12 @@ const path = require("path");
 const router = express.Router();
 const sql = require("../../db");
 
+// Route cho trang chủ
 router.get("/", async (req, res) => {
   try {
-    const request = new sql.Request();
-    const result = await request.query("SELECT * FROM Tours");
+    const isLoggedIn = req.session.user ? true : false; // Kiểm tra xem người dùng đã đăng nhập chưa
 
-    // Đảm bảo đường dẫn tới file home.html trong app/views/home
+    // Đảm bảo đường dẫn đúng đến file home.html trong app/views/home
     const filePath = path.join(
       __dirname,
       "..",
@@ -19,6 +19,7 @@ router.get("/", async (req, res) => {
       "home.html"
     );
 
+    // Gửi file HTML
     res.sendFile(filePath, (err) => {
       if (err) {
         console.error("Lỗi khi gửi file HTML:", err);
@@ -29,25 +30,9 @@ router.get("/", async (req, res) => {
     console.error(err);
     res.status(500).send("Lỗi khi lấy dữ liệu");
   }
-  router.get("/home", (req, res) => {
-    const filePath = path.join(
-      __dirname,
-      "..",
-      "..",
-      "app",
-      "views",
-      "home",
-      "home.html"
-    );
-    res.sendFile(filePath, (err) => {
-      if (err) {
-        console.error("Lỗi khi gửi file HTML:", err);
-        res.status(500).send("Lỗi khi gửi file HTML");
-      }
-    });
-  });
 });
 
+// Route cho trang tour
 router.get("/tour", (req, res) => {
   const filePath = path.join(
     __dirname,
@@ -61,6 +46,7 @@ router.get("/tour", (req, res) => {
   res.sendFile(filePath);
 });
 
+// Route cho trang chi tiết tour
 router.get("/tour-detail", (req, res) => {
   const filePath = path.join(
     __dirname,
@@ -73,8 +59,45 @@ router.get("/tour-detail", (req, res) => {
   );
   res.sendFile(filePath);
 });
+
+// Nếu bạn dùng EJS, có thể render từ views
 router.get("/tour", (req, res) => {
-  res.render("home/tour"); // Sẽ render views/home/tour.ejs
+  res.render("home/tour"); // Render views/home/tour.ejs nếu bạn đang dùng EJS
 });
+
+router.get("/home", (req, res) => {
+  // Kiểm tra xem người dùng đã đăng nhập chưa
+  if (!req.session.user) {
+    return res.redirect("/login"); // Nếu chưa đăng nhập, chuyển hướng về trang đăng nhập
+  }
+
+  // Nếu đã đăng nhập, render trang home
+  const filePath = path.join(
+    __dirname,
+    "..",
+    "..",
+    "app",
+    "views",
+    "home",
+    "home.html"
+  );
+  res.sendFile(filePath, (err) => {
+    if (err) {
+      console.error("Lỗi khi gửi file HTML:", err);
+      res.status(500).send("Lỗi khi gửi file HTML");
+    }
+  });
+});
+
+router.get("/logout", (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send("Lỗi khi đăng xuất.");
+    }
+    res.redirect("/login");  // Chuyển hướng đến trang đăng nhập sau khi đăng xuất
+  });
+});
+
 
 module.exports = router;
