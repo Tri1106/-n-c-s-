@@ -5,7 +5,6 @@ const port = 3000;
 // Cấu hình middleware
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(express.static("public")); // Đảm bảo thư mục public có chứa các tài nguyên như CSS, JS
 
 // Import route controller
 const homeController = require("./app/controllers/homeController");

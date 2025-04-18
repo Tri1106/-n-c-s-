@@ -320,10 +320,10 @@
             const result = await response.text();
 
             if (response.ok) {
-              alert( result);
+              alert("Đăng ký thành công" + result);
               window.location.href = "/account/login";
             } else {
-              alert( result);
+              alert(result);
             }
           } catch (error) {
             console.error("Lỗi fetch:", error);

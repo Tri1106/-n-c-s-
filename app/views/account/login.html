@@ -1,183 +1,228 @@
 <!DOCTYPE html>
 <html lang="vi">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Đăng nhập - Đặt Tour Du Lịch</title>
-  <style>
-    :root {
-      --primary-color: #4CAF50;
-      --secondary-color: #2a5885;
-      --bg-light: #ffffff;
-      --bg-dark: rgba(0, 0, 0, 0.5);
-      --text-color: #333;
-    }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Đăng nhập - Đặt Tour Du Lịch</title>
+    <style>
+      :root {
+        --primary-color: #4caf50;
+        --secondary-color: #2a5885;
+        --bg-light: #ffffff;
+        --bg-dark: rgba(0, 0, 0, 0.5);
+        --text-color: #333;
+      }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
 
-    body {
-      background: linear-gradient(var(--bg-dark), var(--bg-dark)),
-        url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e') center/cover no-repeat;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
+      body {
+        background: linear-gradient(var(--bg-dark), var(--bg-dark)),
+          url("https://images.unsplash.com/photo-1507525428034-b723cf961d3e")
+            center/cover no-repeat;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
 
-    .login-wrapper {
-      background-color: var(--bg-light);
-      padding: 2rem;
-      border-radius: 12px;
-      max-width: 400px;
-      width: 100%;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-    }
+      .login-wrapper {
+        background-color: var(--bg-light);
+        padding: 2rem;
+        border-radius: 12px;
+        max-width: 400px;
+        width: 100%;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+      }
 
-    .login-form .form-title {
-      text-align: center;
-      color: var(--secondary-color);
-      margin-bottom: 1.5rem;
-    }
+      .login-form .form-title {
+        text-align: center;
+        color: var(--secondary-color);
+        margin-bottom: 1.5rem;
+      }
 
-    .form-group {
-      margin-bottom: 1.2rem;
-    }
+      .form-group {
+        margin-bottom: 1.2rem;
+      }
 
-    .form-group label {
-      display: block;
-      margin-bottom: 0.5rem;
-      color: var(--text-color);
-    }
+      .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: var(--text-color);
+      }
 
-    .form-group input {
-      width: 100%;
-      padding: 0.75rem;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      font-size: 1rem;
-    }
+      .form-group input {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 1rem;
+      }
 
-    .form-options {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin: 1rem 0;
-      font-size: 0.9rem;
-    }
+      .form-options {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 1rem 0;
+        font-size: 0.9rem;
+      }
 
-    .form-options a {
-      color: var(--secondary-color);
-      text-decoration: none;
-    }
+      .form-options a {
+        color: var(--secondary-color);
+        text-decoration: none;
+      }
 
-    .btn-submit {
-      width: 100%;
-      padding: 0.75rem;
-      background-color: var(--primary-color);
-      border: none;
-      border-radius: 6px;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-      transition: background-color 0.3s;
-    }
+      .btn-submit {
+        width: 100%;
+        padding: 0.75rem;
+        background-color: var(--primary-color);
+        border: none;
+        border-radius: 6px;
+        color: white;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
 
-    .btn-submit:hover {
-      background-color: #3e8e41;
-    }
+      .btn-submit:hover {
+        background-color: #3e8e41;
+      }
 
-    .social-login {
-      margin-top: 1.5rem;
-      text-align: center;
-    }
+      .social-login {
+        margin-top: 1.5rem;
+        text-align: center;
+      }
 
-    .social-login p {
-      margin-bottom: 0.75rem;
-      color: #666;
-    }
+      .social-login p {
+        margin-bottom: 0.75rem;
+        color: #666;
+      }
 
-    .social-icons {
-      display: flex;
-      justify-content: center;
-      gap: 1rem;
-    }
+      .social-icons {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+      }
 
-    .social-icons a {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 38px;
-      height: 38px;
-      border-radius: 50%;
-      color: white;
-      font-size: 1.2rem;
-      text-decoration: none;
-    }
+      .social-icons a {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        color: white;
+        font-size: 1.2rem;
+        text-decoration: none;
+      }
 
-    .facebook {
-      background-color: #3b5998;
-    }
+      .facebook {
+        background-color: #3b5998;
+      }
 
-    .google {
-      background-color: #db4437;
-    }
+      .google {
+        background-color: #db4437;
+      }
 
-    .register-link {
-      margin-top: 1rem;
-      text-align: center;
-      font-size: 0.95rem;
-    }
+      .register-link {
+        margin-top: 1rem;
+        text-align: center;
+        font-size: 0.95rem;
+      }
 
-    .register-link a {
-      color: var(--secondary-color);
-      text-decoration: none;
-      font-weight: 500;
-    }
-  </style>
-  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
-</head>
-<body>
-  <div class="login-wrapper">
-    <form class="login-form" action="/account/login" method="post">
-      <h2 class="form-title">Đăng nhập</h2>
+      .register-link a {
+        color: var(--secondary-color);
+        text-decoration: none;
+        font-weight: 500;
+      }
+    </style>
+    <script
+      src="https://kit.fontawesome.com/a076d05399.js"
+      crossorigin="anonymous"
+    ></script>
+  </head>
+  <body>
+    <div class="login-wrapper">
+      <form
+        id="loginForm"
+        class="login-form"
+        action="/account/login"
+        method="post"
+      >
+        <h2 class="form-title">Đăng nhập</h2>
 
-      <div class="form-group">
-        <label for="username">Email hoặc SĐT</label>
-        <input type="text" id="username" name="username" required />
-      </div>
-
-      <div class="form-group">
-        <label for="password">Mật khẩu</label>
-        <input type="password" id="password" name="password" required />
-      </div>
-
-      <div class="form-options">
-        <label>
-          <input type="checkbox" name="remember" />
-          Ghi nhớ đăng nhập
-        </label>
-        <a href="/account/forgot-password">Quên mật khẩu?</a>
-      </div>
-
-      <button type="submit" class="btn-submit">Đăng nhập</button>
-
-      <div class="social-login">
-        <p>Hoặc đăng nhập bằng</p>
-        <div class="social-icons">
-          <a href="#" class="facebook"><i class="fab fa-facebook-f"></i></a>
-          <a href="#" class="google"><i class="fab fa-google"></i></a>
+        <div class="form-group">
+          <label for="username">Email hoặc SĐT</label>
+          <input type="text" id="username" name="username" required />
         </div>
-      </div>
 
-      <p class="register-link">
-        Chưa có tài khoản? <a href="/account/register">Đăng ký</a>
-      </p>
-    </form>
-  </div>
-</body>
+        <div class="form-group">
+          <label for="password">Mật khẩu</label>
+          <input type="password" id="password" name="password" required />
+        </div>
+
+        <div class="form-options">
+          <label>
+            <input type="checkbox" name="remember" />
+            Ghi nhớ đăng nhập
+          </label>
+          <a href="/account/forgot-password">Quên mật khẩu?</a>
+        </div>
+
+        <button type="submit" class="btn-submit">Đăng nhập</button>
+
+        <div class="social-login">
+          <p>Hoặc đăng nhập bằng</p>
+          <div class="social-icons">
+            <a href="#" class="facebook"><i class="fab fa-facebook-f"></i></a>
+            <a href="#" class="google"><i class="fab fa-google"></i></a>
+          </div>
+        </div>
+
+        <p class="register-link">
+          Chưa có tài khoản? <a href="/account/register">Đăng ký</a>
+        </p>
+      </form>
+    </div>
+    <script>
+      document
+        .getElementById("loginForm")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+
+          const username = document.getElementById("username").value.trim();
+          const password = document.getElementById("password").value.trim();
+
+          if (!username || !password) {
+            alert("Vui lòng nhập đầy đủ thông tin!");
+            return;
+          }
+
+          try {
+            const response = await fetch("/account/login", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ username, password }),
+            });
+
+            const result = await response.text();
+
+            if (response.ok) {
+              alert("Đăng nhập thành công!");
+              window.location.href = "/home";
+            } else {
+              alert("Đăng nhập thất bại: " + result);
+            }
+          } catch (error) {
+            alert("Lỗi khi gửi yêu cầu: " + error.message);
+          }
+        });
+    </script>
+  </body>
 </html>
