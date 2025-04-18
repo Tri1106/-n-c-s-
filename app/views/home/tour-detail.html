@@ -1,61 +1,155 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chi Tiết Tour</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            color: #333;
-            padding: 20px;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chi tiết Tour Thái Lan</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      color: #333;
+    }
 
-        .tour-detail {
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
+    .container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
 
-        .tour-image {
-            width: 100%;
-            height: 300px;
-            background-size: cover;
-            background-position: center;
-            border-radius: 8px;
-        }
+    .sidebar {
+      width: 100px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
 
-        .tour-info h2 {
-            color: #2a5885;
-        }
+    .sidebar img {
+      width: 100%;
+      border-radius: 8px;
+      object-fit: cover;
+    }
 
-        .tour-price {
-            font-size: 1.5rem;
-            color: #4CAF50;
-            margin: 10px 0;
-        }
+    .main-image {
+      flex: 1;
+      min-width: 300px;
+    }
 
-        .back-btn {
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-    </style>
+    .main-image img {
+      width: 100%;
+      border-radius: 12px;
+    }
+
+    .info-box {
+      width: 300px;
+      border: 1px solid #eee;
+      border-radius: 12px;
+      padding: 20px;
+      background-color: #f9f9f9;
+    }
+
+    .info-box h2 {
+      color: #e53935;
+      margin: 0;
+    }
+
+    .info-box .old-price {
+      text-decoration: line-through;
+      color: gray;
+    }
+
+    .info-box .new-price {
+      font-size: 1.8rem;
+      color: red;
+      font-weight: bold;
+    }
+
+    .info-box .tagline {
+      background-color: #ffe0e0;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 8px;
+      font-weight: bold;
+      color: #c62828;
+    }
+
+    .info-box ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .info-box ul li {
+      margin: 5px 0;
+    }
+
+    .info-box button {
+      background-color: red;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      width: 100%;
+      font-weight: bold;
+      margin-top: 15px;
+    }
+
+    .actions {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 15px;
+    }
+
+    .actions button {
+      background: #1976d2;
+      color: white;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      width: 48%;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
-    <div class="tour-detail">
-        <div class="tour-image" style="background-image: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e');"></div>
-        <div class="tour-info">
-            <h2>Tour Đà Nẵng - Hội An</h2>
-            <div class="tour-price">Giá: 5.990.000 VNĐ</div>
-            <p>Chi tiết về tour Đà Nẵng - Hội An sẽ được hiển thị ở đây.</p>
-            <button class="back-btn" onclick="window.history.back()">Quay lại</button>
-        </div>
+
+<h1>Thái Lan: Bangkok - Pattaya</h1>
+
+<div class="container">
+  <!-- Sidebar image list -->
+  <div class="sidebar">
+    <img src="https://via.placeholder.com/100x70" alt="ảnh nhỏ">
+    <img src="https://via.placeholder.com/100x70" alt="ảnh nhỏ">
+    <img src="https://via.placeholder.com/100x70" alt="ảnh nhỏ">
+    <img src="https://via.placeholder.com/100x70" alt="ảnh nhỏ">
+  </div>
+
+  <!-- Main tour image -->
+  <div class="main-image">
+    <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e" alt="ảnh tour chính">
+  </div>
+
+  <!-- Tour Info -->
+  <div class="info-box">
+    <h2>5.490.000 đ / Khách</h2>
+    <div class="old-price">5.990.000 đ</div>
+    <div class="tagline">🎁 Đặt ngay để tiết kiệm thêm 500K</div>
+    
+    <ul>
+      <li>🆔 Mã tour: NNSGN130-024-200425VU-V-F</li>
+      <li>📍 Khởi hành: TP. Hồ Chí Minh</li>
+      <li>🗓️ Ngày: 20/04/2025</li>
+      <li>⏱️ Thời gian: 5N4Đ</li>
+      <li>👥 Số chỗ còn: 5</li>
+    </ul>
+
+    <button>Đặt ngay</button>
+    <div class="actions">
+      <button>📞 Gọi miễn phí</button>
+      <button>💬 Liên hệ tư vấn</button>
     </div>
+  </div>
+</div>
+
 </body>
 </html>
