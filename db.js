@@ -1,20 +1,27 @@
-// db.js
-const sql = require("mssql");
+const sql = require('mssql');
 
 const config = {
-  user: "sa", // tên đăng nhập SQL Server
-  password: "123456", // mật khẩu
-  server: "localhost", // hoặc tên máy chủ SQL của bạn
-  database: "QuanLyTour", // tên database
+  user: 'sa', 
+  password: '123456', 
+  server: 'localhost', 
+  database: 'QuanLyTour', 
   options: {
-    encrypt: false, // dùng true nếu chạy Azure
-    trustServerCertificate: true, // nếu dùng localhost
+    encrypt: false, 
+    trustServerCertificate: true, 
   },
 };
 
-sql
-  .connect(config)
-  .then(() => console.log(" Kết nối SQL Server thành công!"))
-  .catch((err) => console.error(" Lỗi kết nối SQL:", err));
+// Hàm kết nối và xuất pool kết nối để sử dụng trong các phần khác của ứng dụng
+async function connect() {
+  try {
+    const pool = await sql.connect(config);
+    console.log('Kết nối SQL Server thành công!');
+    return pool; // Trả về đối tượng pool
+  } catch (err) {
+    console.error('Lỗi kết nối SQL:', err);
+    throw err; // Ném lỗi nếu không kết nối được
+  }
+}
 
-module.exports = sql;
+
+module.exports = { sql, connect };

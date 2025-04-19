@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Provider Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="flex h-screen bg-gray-100">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white shadow-md p-4">
+      <h2 class="text-2xl font-bold mb-6 text-blue-600">Provider Panel</h2>
+      <nav class="flex flex-col gap-4">
+        <button
+          class="tab-btn text-left text-gray-700 hover:text-blue-600"
+          data-tab="addTour"
+        >
+          ➕ Thêm Tour
+        </button>
+        <button
+          class="tab-btn text-left text-gray-700 hover:text-blue-600"
+          data-tab="manageTour"
+        >
+          ✏️ Quản lý Tour
+        </button>
+        <button
+          class="tab-btn text-left text-gray-700 hover:text-blue-600"
+          data-tab="viewOrders"
+        >
+          🧾 Xem Đơn Đặt
+        </button>
+        <button
+          class="tab-btn text-left text-gray-700 hover:text-blue-600"
+          data-tab="confirmTour"
+        >
+          📥 Xác Nhận Tour
+        </button>
+        <button
+          class="tab-btn text-left text-gray-700 hover:text-blue-600"
+          data-tab="manageServices"
+        >
+          🧳 Quản lý KS / Vé MB
+        </button>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-6 overflow-y-auto">
+      <!-- Thêm Tour -->
+      <section id="addTour" class="tab-content">
+        <h2 class="text-xl font-bold mb-4">➕ Thêm Tour Mới</h2>
+        <form class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <input
+            type="text"
+            placeholder="Tên tour"
+            class="p-2 border rounded"
+          />
+          <input
+            type="text"
+            placeholder="Điểm đến"
+            class="p-2 border rounded"
+          />
+          <input type="number" placeholder="Giá" class="p-2 border rounded" />
+          <input
+            type="text"
+            placeholder="Thời gian (vd: 3N2Đ)"
+            class="p-2 border rounded"
+          />
+          <input
+            type="number"
+            placeholder="Số chỗ"
+            class="p-2 border rounded"
+          />
+          <textarea
+            placeholder="Mô tả"
+            class="p-2 border rounded col-span-1 md:col-span-2"
+          ></textarea>
+          <button
+            class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 col-span-1 md:col-span-2"
+          >
+            Tạo Tour
+          </button>
+        </form>
+      </section>
+
+      <!-- Quản lý Tour -->
+      <section id="manageTour" class="tab-content hidden">
+        <h2 class="text-xl font-bold mb-4">✏️ Quản lý Tour</h2>
+        <p>
+          Danh sách tour sẽ được hiển thị ở đây với nút chỉnh sửa, ẩn/hiện, cập
+          nhật số chỗ còn lại.
+        </p>
+        <!-- Bạn có thể render bảng từ backend -->
+      </section>
+
+      <!-- Xem đơn đặt -->
+      <section id="viewOrders" class="tab-content hidden">
+        <h2 class="text-xl font-bold mb-4">🧾 Xem Đơn Đặt</h2>
+        <p>Hiển thị các đơn hàng/tour đã được người dùng đặt.</p>
+      </section>
+
+      <!-- Xác nhận tour -->
+      <section id="confirmTour" class="tab-content hidden">
+        <h2 class="text-xl font-bold mb-4">📥 Xác Nhận Tour</h2>
+        <p>Gửi xác nhận thủ công đến khách đặt nếu cần.</p>
+      </section>
+
+      <!-- Quản lý KS / Vé MB -->
+      <section id="manageServices" class="tab-content hidden">
+        <h2 class="text-xl font-bold mb-4">
+          🧳 Quản lý Khách sạn / Vé Máy Bay
+        </h2>
+        <p>Cho phép thêm, chỉnh sửa khách sạn hoặc vé máy bay đi kèm tour.</p>
+      </section>
+    </main>
+
+    <!-- Script chuyển tab -->
+    <script>
+      const tabButtons = document.querySelectorAll(".tab-btn");
+      const tabContents = document.querySelectorAll(".tab-content");
+
+      tabButtons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const tab = btn.getAttribute("data-tab");
+
+          tabContents.forEach((c) => c.classList.add("hidden"));
+          document.getElementById(tab).classList.remove("hidden");
+        });
+      });
+    </script>
+  </body>
+</html>

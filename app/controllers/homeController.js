@@ -1,7 +1,7 @@
 const express = require("express");
 const path = require("path");
 const router = express.Router();
-const sql = require("../../db");
+const { sql, connect } = require("../../db");
 
 // Route cho trang chủ
 router.get("/", async (req, res) => {
@@ -66,12 +66,6 @@ router.get("/tour", (req, res) => {
 });
 
 router.get("/home", (req, res) => {
-  // Kiểm tra xem người dùng đã đăng nhập chưa
-  if (!req.session.user) {
-    return res.redirect("/login"); // Nếu chưa đăng nhập, chuyển hướng về trang đăng nhập
-  }
-
-  // Nếu đã đăng nhập, render trang home
   const filePath = path.join(
     __dirname,
     "..",
@@ -81,12 +75,7 @@ router.get("/home", (req, res) => {
     "home",
     "home.html"
   );
-  res.sendFile(filePath, (err) => {
-    if (err) {
-      console.error("Lỗi khi gửi file HTML:", err);
-      res.status(500).send("Lỗi khi gửi file HTML");
-    }
-  });
+  res.sendFile(filePath);
 });
 
 router.get("/logout", (req, res) => {
@@ -95,9 +84,28 @@ router.get("/logout", (req, res) => {
       console.error(err);
       return res.status(500).send("Lỗi khi đăng xuất.");
     }
-    res.redirect("/login");  // Chuyển hướng đến trang đăng nhập sau khi đăng xuất
+    res.redirect("/login"); // Chuyển hướng đến trang đăng nhập sau khi đăng xuất
   });
 });
 
+router.get("/provider-dashboard", (req, res) => {
+  console.log("Session user tại provider-dashboard:", req.session.user); // Kiểm tra session
+
+  // Kiểm tra xem có session và role là "provider" không
+  if (req.session.user && req.session.user.role === "provider") {
+    const filePath = path.join(
+      __dirname,
+      "..",
+      "..",
+      "app",
+      "views",
+      "home",
+      "provider-dashboard.html"
+    );
+    res.sendFile(filePath);
+  } else {
+    res.redirect("/login"); // Chuyển hướng nếu không phải provider
+  }
+});
 
 module.exports = router;

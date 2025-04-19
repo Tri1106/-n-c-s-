@@ -211,13 +211,21 @@
               body: JSON.stringify({ username, password }),
             });
 
-            const result = await response.text();
+            const result = await response.json(); // Nhận thông tin người dùng từ backend
 
             if (response.ok) {
               alert("Đăng nhập thành công!");
-              window.location.href = "/home";
+
+              // Kiểm tra role người dùng để redirect về đúng dashboard
+              if (result.role === "provider") {
+                window.location.href = "/provider-dashboard"; // Redirect về provider-dashboard
+              } else if (result.role === "admin") {
+                window.location.href = "/admin-dashboard"; // Redirect về admin-dashboard
+              } else {
+                window.location.href = "/home"; // Redirect về home nếu là khách hàng
+              }
             } else {
-              alert("Đăng nhập thất bại: " + result);
+              alert("Đăng nhập thất bại: " + result.message);
             }
           } catch (error) {
             alert("Lỗi khi gửi yêu cầu: " + error.message);

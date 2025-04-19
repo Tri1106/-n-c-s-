@@ -1,10 +1,10 @@
 const express = require("express");
 const path = require("path");
 const router = express.Router();
-const sql = require("../../db");
+const { sql, connect } = require("../../db");
 const session = require("express-session");
+const bcrypt = require("bcryptjs");
 
-// Middleware sử dụng session
 
 // Hiển thị trang login
 router.get("/login", (req, res) => {
@@ -43,20 +43,22 @@ router.post(
     const userID = "U" + Date.now();
 
     try {
-      const pool = await sql.connect();
+      const pool = await connect(); // ✅ Kết nối đúng
+      const hashedPassword = await bcrypt.hash(password, 10);
+
       await pool
         .request()
         .input("userID", sql.VarChar, userID)
         .input("fullname", sql.NVarChar, fullname)
         .input("email", sql.VarChar, email)
         .input("phone", sql.VarChar, phone)
-        .input("password", sql.VarChar, password)
+        .input("password", sql.VarChar, hashedPassword)
         .input("role", sql.VarChar, "customer").query(`
         INSERT INTO Users (UserID, FullName, Email, Phone, Password, Role)
         VALUES (@userID, @fullname, @email, @phone, @password, @role)
       `);
 
-      res.redirect("/login"); // Chuyển hướng đến trang login sau khi đăng ký thành công
+      res.redirect("/account/login"); // Redirect đúng path
     } catch (err) {
       console.error(err);
       res.status(500).send("Lỗi khi đăng ký.");
@@ -69,24 +71,40 @@ router.post("/login", async (req, res) => {
   const { username, password } = req.body;
 
   try {
-    const pool = await sql.connect();
+    const pool = await connect(); // ✅ Kết nối đúng
+
     const result = await pool
       .request()
       .input("username", sql.VarChar, username)
-      .input("password", sql.VarChar, password)
       .query(
-        "SELECT * FROM Users WHERE (Email = @username OR Phone = @username) AND Password = @password"
+        "SELECT * FROM Users WHERE Email = @username OR Phone = @username"
       );
 
-    if (result.recordset.length > 0) {
-      req.session.user = result.recordset[0]; // Gán thông tin user vào session
-      res.status(200).send("Đăng nhập thành công!");
+    const user = result.recordset[0];
+
+    if (user) {
+      const isMatch = await bcrypt.compare(password, user.Password);
+
+      if (isMatch) {
+        req.session.user = {
+          id: user.UserID,
+          fullname: user.FullName,
+          role: user.Role,
+        };
+        console.log("Đăng nhập thành công:", req.session.user);
+
+        // Trả về thông tin người dùng dưới dạng JSON để frontend sử dụng
+        res.json(req.session.user);  // Trả về session user để dùng trên frontend
+
+      } else {
+        res.status(401).send("Sai tài khoản hoặc mật khẩu");
+      }
     } else {
-      res.status(401).send("Sai tên đăng nhập hoặc mật khẩu.");
+      res.status(401).send("Sai tài khoản hoặc mật khẩu");
     }
   } catch (err) {
-    console.error("Lỗi đăng nhập:", err);
-    res.status(500).send("Lỗi máy chủ.");
+    console.error(err);
+    res.status(500).send("Lỗi server");
   }
 });
 
