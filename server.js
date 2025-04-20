@@ -25,6 +25,9 @@ app.use("/", homeController); // Gắn controller chính
 const accountRoutes = require("./app/controllers/accountController");
 app.use("/account", accountRoutes);
 
+const adminRoutes = require('./app/controllers/adminController');
+app.use('/', adminRoutes);
+
 app.listen(port, () => {
   console.log(` Server chạy tại http://localhost:${port}`);
 });
