@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Quản trị viên - Trang điều khiển</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+        }
+
+        header {
+            background: #2e4357;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        nav {
+            background: #34495e;
+            padding: 10px 0;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 0;
+            padding: 0;
+        }
+
+        nav ul li, nav ul li a {
+            color: white;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        main {
+            padding: 30px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        h2 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 15px;
+            border-bottom: 1px solid #ddd;
+            text-align: center;
+        }
+
+        th {
+            background-color: #2e86de;
+            color: white;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        .summary {
+            margin-top: 20px;
+            text-align: right;
+            font-weight: bold;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Quản trị viên - Trang điều khiển</h1>
+        <nav>
+            <ul>
+                <li>👥 Quản lý tài khoản</li>
+                <li>📄 Quản lý tour</li>
+                <li>💵 Doanh thu</li>
+                <li>📊 Thống kê</li>
+                <li>🧾 Quản lý đơn đặt</li>
+                <li><a href="#">Đăng xuất</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <h2>Bảng doanh thu các tháng trong năm 2025</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Tháng</th>
+                    <th>Số đơn hàng</th>
+                    <th>Doanh thu (VNĐ)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>Tháng 1</td><td>120</td><td>85,000,000</td></tr>
+                <tr><td>Tháng 2</td><td>95</td><td>72,000,000</td></tr>
+                <tr><td>Tháng 3</td><td>150</td><td>110,500,000</td></tr>
+                <tr><td>Tháng 4</td><td>180</td><td>135,800,000</td></tr>
+                <tr><td>Tháng 5</td><td>200</td><td>158,900,000</td></tr>
+                <!-- Có thể thêm các tháng khác tại đây -->
+            </tbody>
+        </table>
+        <div class="summary">Tổng doanh thu: <span>562,200,000 VNĐ</span></div>
+    </main>
+</body>
+</html>

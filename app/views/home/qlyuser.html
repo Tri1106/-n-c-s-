@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Quản trị viên - Trang điều khiển</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+        }
+
+        header {
+            background: #2e4357;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        nav {
+            background: #34495e;
+            padding: 10px 0;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 0;
+            padding: 0;
+        }
+
+        nav ul li, nav ul li a {
+            color: white;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        main {
+            padding: 30px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .admin-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        .admin-form label {
+            display: flex;
+            flex-direction: column;
+            font-weight: bold;
+        }
+
+        .admin-form input, .admin-form select {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-top: 5px;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+        }
+
+        .edit {
+            background-color: #3498db;
+        }
+
+        .delete {
+            background-color: #e74c3c;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Quản trị viên - Trang điều khiển</h1>
+        <nav>
+            <ul>
+                <li>👥 Quản lý tài khoản</li>
+                <li>📄 Quản lý tour</li>
+                <li>💵 Doanh thu</li>
+                <li>📊 Thống kê</li>
+                <li>🧾 Quản lý đơn đặt</li>
+                <li><a href="#">Đăng xuất</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <form class="admin-form">
+            <label>
+                Tên đăng nhập:
+                <input type="text" name="username">
+            </label>
+            <label>
+                Email:
+                <input type="email" name="email">
+            </label>
+            <label>
+                Mật khẩu:
+                <input type="password" name="password">
+            </label>
+            <label>
+                Số điện thoại:
+                <input type="tel" name="phone">
+            </label>
+            <label>
+                Họ và tên:
+                <input type="text" name="fullname">
+            </label>
+            <label>
+                Vai trò:
+                <select name="role">
+                    <option value="admin">Admin</option>
+                    <option value="user">Người dùng</option>
+                </select>
+            </label>
+            <div class="button-group">
+                <button type="submit" class="edit">Sửa</button>
+                <button type="button" class="delete">Xóa</button>
+            </div>
+        </form>
+    </main>
+</body>
+</html>
