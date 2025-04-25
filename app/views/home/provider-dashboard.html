@@ -49,37 +49,61 @@
       <!-- Thêm Tour -->
       <section id="addTour" class="tab-content">
         <h2 class="text-xl font-bold mb-4">➕ Thêm Tour Mới</h2>
-        <form class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+        <form
+          id="addTourForm"
+          class="grid grid-cols-1 md:grid-cols-2 gap-4"
+          enctype="multipart/form-data"
+          method="POST"
+        >
           <input
             type="text"
+            name="tourName"
             placeholder="Tên tour"
             class="p-2 border rounded"
+            required
           />
           <input
             type="text"
+            name="destination"
             placeholder="Điểm đến"
             class="p-2 border rounded"
-          />
-          <input type="number" placeholder="Giá" class="p-2 border rounded" />
-          <input
-            type="text"
-            placeholder="Thời gian (vd: 3N2Đ)"
-            class="p-2 border rounded"
+            required
           />
           <input
             type="number"
+            name="price"
+            placeholder="Giá"
+            class="p-2 border rounded"
+            required
+          />
+          <input
+            type="number"
+            name="seats"
             placeholder="Số chỗ"
             class="p-2 border rounded"
+            required
           />
-          <textarea
-            placeholder="Mô tả"
-            class="p-2 border rounded col-span-1 md:col-span-2"
-          ></textarea>
+          <input type="file" name="tourImage" accept="image/*" required />
+
+          <!-- providerID sẽ được gửi từ frontend -->
+          <input
+            type="hidden"
+            name="providerID"
+            value="providerID_value_from_session_or_authentication"
+          />
+
           <button
+            type="submit"
             class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 col-span-1 md:col-span-2"
           >
-            Tạo Tour
+            Thêm Tour
           </button>
+
+          <p
+            id="tourMessage"
+            class="col-span-1 md:col-span-2 font-semibold hidden"
+          ></p>
         </form>
       </section>
 
@@ -90,7 +114,6 @@
           Danh sách tour sẽ được hiển thị ở đây với nút chỉnh sửa, ẩn/hiện, cập
           nhật số chỗ còn lại.
         </p>
-        <!-- Bạn có thể render bảng từ backend -->
       </section>
 
       <!-- Xem đơn đặt -->
@@ -114,19 +137,58 @@
       </section>
     </main>
 
-    <!-- Script chuyển tab -->
+    <!-- Script -->
     <script>
-      const tabButtons = document.querySelectorAll(".tab-btn");
-      const tabContents = document.querySelectorAll(".tab-content");
-
-      tabButtons.forEach((btn) => {
+      // Đổi tab
+      document.querySelectorAll(".tab-btn").forEach((btn) => {
         btn.addEventListener("click", () => {
           const tab = btn.getAttribute("data-tab");
-
-          tabContents.forEach((c) => c.classList.add("hidden"));
+          document
+            .querySelectorAll(".tab-content")
+            .forEach((el) => el.classList.add("hidden"));
           document.getElementById(tab).classList.remove("hidden");
         });
       });
+
+      // Submit Thêm Tour
+      document
+        .getElementById("addTourForm")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+
+          const form = e.target;
+          const formData = new FormData(form);
+          const messageBox = document.getElementById("tourMessage");
+
+          try {
+            const res = await fetch("/provider/add-tour", {
+              method: "POST",
+              body: formData,
+            });
+
+            const text = await res.text();
+            console.log("Server trả về:", text);
+
+            messageBox.classList.remove("hidden");
+
+            if (res.ok) {
+              messageBox.innerText = "✅ Tour đã được thêm thành công!";
+              messageBox.classList.remove("text-red-600");
+              messageBox.classList.add("text-green-600");
+              form.reset();
+            } else {
+              messageBox.innerText = "❌ Thêm tour thất bại!";
+              messageBox.classList.remove("text-green-600");
+              messageBox.classList.add("text-red-600");
+            }
+          } catch (err) {
+            console.error("Lỗi fetch:", err);
+            messageBox.innerText = "❌ Không thể kết nối tới server.";
+            messageBox.classList.remove("text-green-600");
+            messageBox.classList.add("text-red-600");
+            messageBox.classList.remove("hidden");
+          }
+        });
     </script>
   </body>
 </html>

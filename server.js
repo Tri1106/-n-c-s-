@@ -17,6 +17,7 @@ app.use(
 // Cấu hình middleware
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+app.use("/uploads", express.static(path.join(__dirname, "public/uploads")));
 
 // Import route controller
 const homeController = require("./app/controllers/homeController");
@@ -25,8 +26,11 @@ app.use("/", homeController); // Gắn controller chính
 const accountRoutes = require("./app/controllers/accountController");
 app.use("/account", accountRoutes);
 
-const adminRoutes = require('./app/controllers/adminController');
-app.use('/', adminRoutes);
+const adminRoutes = require("./app/controllers/adminController");
+app.use("/", adminRoutes);
+
+const providerRoute = require("./app/controllers/providerController");
+app.use("/provider", providerRoute);
 
 app.listen(port, () => {
   console.log(` Server chạy tại http://localhost:${port}`);
