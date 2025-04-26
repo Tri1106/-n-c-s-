@@ -2,12 +2,12 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Quản trị viên - Trang điều khiển</title>
+    <title>Quản lý tài khoản</title>
     <style>
         body {
-            margin: 0;
             font-family: Arial, sans-serif;
             background: #f4f6f8;
+            margin: 0;
         }
 
         header {
@@ -39,60 +39,60 @@
 
         main {
             padding: 30px;
-            max-width: 600px;
-            margin: 0 auto;
+            max-width: 1200px;
+            margin: auto;
         }
 
-        .admin-form {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
+        h2 {
+            text-align: center;
+            color: #2c3e50;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
             background: white;
-            padding: 20px;
-            border-radius: 10px;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 10px;
+            overflow: hidden;
         }
 
-        .admin-form label {
-            display: flex;
-            flex-direction: column;
-            font-weight: bold;
+        th, td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #ddd;
+            text-align: center;
         }
 
-        .admin-form input, .admin-form select {
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            margin-top: 5px;
+        th {
+            background-color: #2980b9;
+            color: white;
         }
 
-        .button-group {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 20px;
+        tr:hover {
+            background-color: #f9f9f9;
         }
 
-        button {
-            padding: 10px 20px;
+        .action-buttons button {
+            padding: 6px 12px;
             border: none;
-            border-radius: 6px;
+            border-radius: 4px;
             cursor: pointer;
             font-weight: bold;
             color: white;
         }
 
-        .edit {
-            background-color: #3498db;
+        .edit-btn {
+            background-color: #27ae60;
         }
 
-        .delete {
-            background-color: #e74c3c;
+        .delete-btn {
+            background-color: #c0392b;
         }
     </style>
 </head>
 <body>
     <header>
-        <h1>Quản trị viên - Trang điều khiển</h1>
+        <h1>Quản trị viên - Quản lý tài khoản</h1>
         <nav>
             <ul>
                 <li>👥 Quản lý tài khoản</li>
@@ -106,39 +106,35 @@
     </header>
 
     <main>
-        <form class="admin-form">
-            <label>
-                Tên đăng nhập:
-                <input type="text" name="username">
-            </label>
-            <label>
-                Email:
-                <input type="email" name="email">
-            </label>
-            <label>
-                Mật khẩu:
-                <input type="password" name="password">
-            </label>
-            <label>
-                Số điện thoại:
-                <input type="tel" name="phone">
-            </label>
-            <label>
-                Họ và tên:
-                <input type="text" name="fullname">
-            </label>
-            <label>
-                Vai trò:
-                <select name="role">
-                    <option value="admin">Admin</option>
-                    <option value="user">Người dùng</option>
-                </select>
-            </label>
-            <div class="button-group">
-                <button type="submit" class="edit">Sửa</button>
-                <button type="button" class="delete">Xóa</button>
-            </div>
-        </form>
+        <h2>Danh sách tài khoản người dùng</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Tên đăng nhập</th>
+                    <th>Email</th>
+                    <th>SĐT</th>
+                    <th>Họ tên</th>
+                    <th>Vai trò</th>
+                    <th>Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+                
+                    <tr>
+                        <td>@user.Username</td>
+                        <td>@user.Email</td>
+                        <td>@user.Phone</td>
+                        <td>@user.FullName</td>
+                        <td>@user.Role</td>
+                        <td class="action-buttons">
+                            <button class="edit-btn" onclick="location.href='/EditUser/@user.Id'">Sửa</button>
+                            <button class="delete-btn" onclick="if(confirm('Bạn có chắc muốn xoá?')) location.href='/DeleteUser/@user.Id'">Xoá</button>
+                        </td>
+                    </tr>
+                
+            </tbody>
+        </table>
     </main>
 </body>
 </html>
