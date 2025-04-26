@@ -57,4 +57,72 @@ router.post("/add-tour", upload.single("tourImage"), async (req, res) => {
   }
 });
 
+router.get("/tours", async (req, res) => {
+  try {
+    const providerID = req.session.user?.providerID; // đúng chỗ, vì bạn lưu providerID trong session user
+    if (!providerID) {
+      return res.status(400).send("❌ Chưa đăng nhập.");
+    }
+
+    const pool = await connect(); // <-- dùng connect để lấy pool
+    const result = await pool
+      .request()
+      .input("providerID", sql.VarChar, providerID).query(`
+        SELECT TourID, TourName, Destination, Price, SoCho, ImageURL
+        FROM Tours
+        WHERE ProviderID = @providerID
+      `);
+
+    res.json(result.recordset); // Gửi danh sách tours về frontend
+  } catch (error) {
+    console.error("Lỗi lấy danh sách tour:", error);
+    res.status(500).send("Server error");
+  }
+});
+
+router.put("/edit-tour/:tourID", async (req, res) => {
+  try {
+    const { tourName, destination, price, seats } = req.body;
+    const tourID = req.params.tourID;
+
+    const pool = await connect();
+    await pool
+      .request()
+      .input("TourID", sql.VarChar, tourID)
+      .input("TourName", sql.VarChar, tourName)
+      .input("Destination", sql.NVarChar, destination)
+      .input("Price", sql.Decimal(10, 2), price)
+      .input("SoCho", sql.Int, seats)
+      .query(`
+        UPDATE Tours
+        SET TourName = @TourName, Destination = @Destination, Price = @Price, SoCho = @SoCho
+        WHERE TourID = @TourID
+      `);
+
+    res.send("✅ Tour đã được cập nhật thành công!");
+  } catch (err) {
+    console.error("❌ Lỗi khi cập nhật tour:", err);
+    res.status(500).send("❌ Lỗi khi cập nhật tour.");
+  }
+});
+
+router.delete("/delete-tour/:tourID", async (req, res) => {
+  try {
+    const tourID = req.params.tourID;
+
+    const pool = await connect();
+    await pool
+      .request()
+      .input("TourID", sql.VarChar, tourID)
+      .query(`
+        DELETE FROM Tours WHERE TourID = @TourID
+      `);
+
+    res.send("✅ Tour đã được xóa thành công!");
+  } catch (err) {
+    console.error("❌ Lỗi khi xóa tour:", err);
+    res.status(500).send("❌ Lỗi khi xóa tour.");
+  }
+});
+
 module.exports = router;

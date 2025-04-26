@@ -76,7 +76,7 @@ router.post("/login", async (req, res) => {
   try {
     const pool = await connect();
 
-    // Lấy thông tin user từ email hoặc phone
+    // Tìm user theo email hoặc phone
     const result = await pool
       .request()
       .input("username", sql.VarChar, username)
@@ -90,26 +90,31 @@ router.post("/login", async (req, res) => {
       const isMatch = await bcrypt.compare(password, user.Password);
 
       if (isMatch) {
-        // Nếu là provider, lấy thêm ProviderID
         let providerID = null;
+
+        // Nếu role là provider thì tìm ProviderID theo UserID
         if (user.Role === "provider") {
           const providerResult = await pool
             .request()
-            .input("userID", sql.VarChar, user.UserID)
+            .input("userID", sql.VarChar, user.UserID) // Dùng UserID, không phải ProviderID!
             .query("SELECT ProviderID FROM Providers WHERE UserID = @userID");
-          providerID = providerResult.recordset[0]?.ProviderID; // Lấy ProviderID
+
+          if (providerResult.recordset.length > 0) {
+            providerID = providerResult.recordset[0].ProviderID;
+          }
         }
 
+        // Lưu session chính xác
         req.session.user = {
-          id: user.UserID,
+          id: user.UserID, // LUÔN luôn lưu UserID vào id
           fullname: user.FullName,
           role: user.Role,
-          providerID: providerID, // Lưu ProviderID vào session nếu là provider
+          providerID: providerID, // Nếu là provider thì lưu thêm ProviderID
         };
+
         console.log("Đăng nhập thành công:", req.session.user);
 
-        // Trả về thông tin người dùng dưới dạng JSON để frontend sử dụng
-        res.json(req.session.user); // Trả về session user cho frontend
+        res.json(req.session.user);
       } else {
         res.status(401).send("Sai tài khoản hoặc mật khẩu");
       }
