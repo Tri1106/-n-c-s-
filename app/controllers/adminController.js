@@ -26,6 +26,16 @@ router.get("/admin-dashboard", async (req, res) => {
   }
 });
 
+router.get("/user", async (req, res) => {
+  try {
+    const pool = await poolPromise;
+    const result = await pool.request().query("SELECT * FROM dbo.users");
+    res.json(result.recordset);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Route đăng ký nhà cung cấp
 router.post("/register-provider", async (req, res) => {
   const { fullName, email, password, phone } = req.body;
