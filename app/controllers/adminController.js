@@ -26,16 +26,6 @@ router.get("/admin-dashboard", async (req, res) => {
   }
 });
 
-router.get("/user", async (req, res) => {
-  try {
-    const pool = await poolPromise;
-    const result = await pool.request().query("SELECT * FROM dbo.users");
-    res.json(result.recordset);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
 // Route đăng ký nhà cung cấp
 router.post("/register-provider", async (req, res) => {
   const { fullName, email, password, phone } = req.body;
@@ -81,5 +71,31 @@ router.post("/register-provider", async (req, res) => {
     res.status(500).send("❌ Lỗi khi tạo nhà cung cấp");
   }
 });
+
+router.get("/user", (req, res) => {
+  const filePath = path.join(
+    __dirname,
+    "..",
+    "..",
+    "app",
+    "views",
+    "home",
+    "qlyuser.html"
+  );
+  res.sendFile(filePath);
+});
+
+// API lấy dữ liệu user
+router.get("/user/data", async (req, res) => {
+  try {
+    const pool = await db.connect();
+    const result = await pool.request().query("SELECT * FROM dbo.Users");
+    res.json(result.recordset); // Trả dữ liệu JSON về phía frontend
+  } catch (err) {
+    console.error("Lỗi lấy dữ liệu Users:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 
 module.exports = router;

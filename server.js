@@ -32,6 +32,10 @@ app.use("/", adminRoutes);
 const providerRoute = require("./app/controllers/providerController");
 app.use("/provider", providerRoute);
 
+const methodOverride = require("method-override");
+const router = require("./app/controllers/adminController");
+app.use(methodOverride("_method"));
+
 app.listen(port, () => {
   console.log(` Server chạy tại http://localhost:${port}`);
 });

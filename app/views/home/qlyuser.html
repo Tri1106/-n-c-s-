@@ -1,173 +1,146 @@
-const express = require('express');
-const path = require('path');
-const bcrypt = require('bcryptjs');
-const db = require('./db'); // Đã kết nối SQL Server
-const app = express();
-
-// Middlewares
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// Hiển thị giao diện quản lý tài khoản
-app.get('/', async (req, res) => {
-    try {
-        const result = await db.query(`SELECT * FROM Users`); // Bảng Users nhé
-        const users = result.recordset;
-
-        let rows = users.map(user => `
-            <tr>
-                <td>${user.Username}</td>
-                <td>${user.Email}</td>
-                <td>${user.Phone}</td>
-                <td>${user.FullName}</td>
-                <td>${user.Role}</td>
-                <td class="action-buttons">
-                    <button class="edit-btn" onclick="location.href='/edit/${user.Id}'">Sửa</button>
-                    <button class="delete-btn" onclick="if(confirm('Bạn có chắc muốn xoá?')) location.href='/delete/${user.Id}'">Xoá</button>
-                </td>
-            </tr>
-        `).join('');
-
-        res.send(`
 <!DOCTYPE html>
 <html lang="vi">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <title>Quản lý tài khoản</title>
     <style>
-        /* (CSS giữ nguyên như bạn đã có) */
-        body { font-family: Arial, sans-serif; background: #f4f6f8; margin: 0; }
-        header { background: #2e4357; color: white; padding: 20px; text-align: center; }
-        nav { background: #34495e; padding: 10px 0; }
-        nav ul { list-style: none; display: flex; justify-content: center; gap: 30px; margin: 0; padding: 0; }
-        nav ul li, nav ul li a { color: white; font-weight: bold; text-decoration: none; }
-        main { padding: 30px; max-width: 1200px; margin: auto; }
-        h2 { text-align: center; color: #2c3e50; }
-        table { width: 100%; border-collapse: collapse; background: white; box-shadow: 0 0 10px rgba(0,0,0,0.1); border-radius: 10px; overflow: hidden; }
-        th, td { padding: 12px 15px; border-bottom: 1px solid #ddd; text-align: center; }
-        th { background-color: #2980b9; color: white; }
-        tr:hover { background-color: #f9f9f9; }
-        .action-buttons button { padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; color: white; }
-        .edit-btn { background-color: #27ae60; }
-        .delete-btn { background-color: #c0392b; }
+      body {
+        font-family: Arial, sans-serif;
+        background: #f4f6f8;
+        margin: 0;
+      }
+      header {
+        background: #2e4357;
+        color: white;
+        padding: 20px;
+        text-align: center;
+      }
+      nav {
+        background: #34495e;
+        padding: 10px 0;
+      }
+      nav ul {
+        list-style: none;
+        display: flex;
+        justify-content: center;
+        gap: 30px;
+        margin: 0;
+        padding: 0;
+      }
+      nav ul li,
+      nav ul li a {
+        color: white;
+        font-weight: bold;
+        text-decoration: none;
+      }
+      main {
+        padding: 30px;
+        max-width: 1200px;
+        margin: auto;
+      }
+      h2 {
+        text-align: center;
+        color: #2c3e50;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+        overflow: hidden;
+      }
+      th,
+      td {
+        padding: 12px 15px;
+        border-bottom: 1px solid #ddd;
+        text-align: center;
+      }
+      th {
+        background-color: #2980b9;
+        color: white;
+      }
+      tr:hover {
+        background-color: #f9f9f9;
+      }
+      .action-buttons button {
+        padding: 6px 12px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: bold;
+        color: white;
+      }
+      .edit-btn {
+        background-color: #27ae60;
+      }
+      .delete-btn {
+        background-color: #c0392b;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <header>
-        <h1>Quản trị viên - Quản lý tài khoản</h1>
-        <nav>
-            <ul>
-                <li>👥 Quản lý tài khoản</li>
-                <li>📄 Quản lý tour</li>
-                <li>💵 Doanh thu</li>
-                <li>📊 Thống kê</li>
-                <li>🧾 Quản lý đơn đặt</li>
-                <li><a href="#">Đăng xuất</a></li>
-            </ul>
-        </nav>
+      <h1>Quản trị viên - Quản lý tài khoản</h1>
+      <nav>
+        <ul>
+          <li>👥 Quản lý tài khoản</li>
+          <li>📄 Quản lý tour</li>
+          <li>💵 Doanh thu</li>
+          <li>📊 Thống kê</li>
+          <li>🧾 Quản lý đơn đặt</li>
+          <li><a href="/home">Đăng xuất</a></li>
+        </ul>
+      </nav>
     </header>
 
     <main>
-        <h2>Danh sách tài khoản người dùng</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Tên đăng nhập</th>
-                    <th>Email</th>
-                    <th>SĐT</th>
-                    <th>Họ tên</th>
-                    <th>Vai trò</th>
-                    <th>Hành động</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${rows}
-            </tbody>
-        </table>
+      <h2>Danh sách tài khoản người dùng</h2>
+      <table id="userList">
+        <thead>
+          <tr>
+            <th>Tên đăng nhập</th>
+            <th>Email</th>
+            <th>SĐT</th>
+            <th>Họ tên</th>
+            <th>Vai trò</th>
+            <th>Hành động</th>
+          </tr>
+        </thead>
+        <tbody id="userTableBody">
+          <!-- Dữ liệu người dùng sẽ được thêm vào đây thông qua JavaScript -->
+        </tbody>
+      </table>
     </main>
-</body>
+
+    <script>
+      // Fetch danh sách user từ API
+      fetch("/user/data")
+        .then((response) => response.json())
+        .then((users) => {
+          console.log(users); // Kiểm tra trên console
+          const tableBody = document.getElementById("userList");
+
+          users.forEach((user) => {
+            const row = document.createElement("tr");
+
+            row.innerHTML = `
+              <td>${user.UserID}</td>
+              <td>${user.Email}</td>
+              <td>${user.Phone}</td>
+              <td>${user.FullName}</td>
+              <td>${user.Role}</td>
+              <td>
+                <div class="action-buttons">
+                  <button class="edit-btn">Sửa</button>
+                  <button class="delete-btn">Xóa</button>
+                </div>
+              </td>
+            `;
+            tableBody.appendChild(row);
+          });
+        })
+        .catch((error) => console.error("❌ Lỗi khi fetch dữ liệu:", error));
+    </script>
+  </body>
 </html>
-        `);
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Lỗi server');
-    }
-});
-
-// Xử lý xoá người dùng
-app.get('/delete/:id', async (req, res) => {
-    try {
-        const { id } = req.params;
-        await db.query(`DELETE FROM Users WHERE Id = @id`, {
-            input: { name: 'id', type: db.sql.Int, value: id }
-        });
-        res.redirect('/');
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Lỗi khi xoá user');
-    }
-});
-
-// Hiển thị form chỉnh sửa
-app.get('/edit/:id', async (req, res) => {
-    try {
-        const { id } = req.params;
-        const result = await db.query(`SELECT * FROM Users WHERE Id = @id`, {
-            input: { name: 'id', type: db.sql.Int, value: id }
-        });
-        const user = result.recordset[0];
-        if (!user) return res.status(404).send('Không tìm thấy user');
-
-        res.send(`
-            <h2>Chỉnh sửa tài khoản</h2>
-            <form action="/edit/${user.Id}" method="post">
-                <label>Username:</label><br/>
-                <input type="text" name="Username" value="${user.Username}" required><br/>
-                <label>Email:</label><br/>
-                <input type="email" name="Email" value="${user.Email}" required><br/>
-                <label>SĐT:</label><br/>
-                <input type="text" name="Phone" value="${user.Phone}" required><br/>
-                <label>Họ tên:</label><br/>
-                <input type="text" name="FullName" value="${user.FullName}" required><br/>
-                <label>Vai trò:</label><br/>
-                <input type="text" name="Role" value="${user.Role}" required><br/><br/>
-                <button type="submit">Lưu</button>
-            </form>
-        `);
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Lỗi server');
-    }
-});
-
-// Xử lý lưu chỉnh sửa
-app.post('/edit/:id', async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { Username, Email, Phone, FullName, Role } = req.body;
-
-        await db.query(`UPDATE Users 
-                        SET Username=@Username, Email=@Email, Phone=@Phone, FullName=@FullName, Role=@Role 
-                        WHERE Id=@id`, {
-            input: [
-                { name: 'Username', type: db.sql.NVarChar, value: Username },
-                { name: 'Email', type: db.sql.NVarChar, value: Email },
-                { name: 'Phone', type: db.sql.NVarChar, value: Phone },
-                { name: 'FullName', type: db.sql.NVarChar, value: FullName },
-                { name: 'Role', type: db.sql.NVarChar, value: Role },
-                { name: 'id', type: db.sql.Int, value: id }
-            ]
-        });
-
-        res.redirect('/');
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Lỗi khi lưu chỉnh sửa');
-    }
-});
-
-// Server start
-const port = 3000;
-app.listen(port, () => {
-    console.log(`Server đang chạy tại http://localhost:${port}`);
-});

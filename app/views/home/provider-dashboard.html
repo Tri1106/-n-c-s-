@@ -12,34 +12,34 @@
       <h2 class="text-2xl font-bold mb-6 text-blue-600">Provider Panel</h2>
       <nav class="flex flex-col gap-4">
         <button
-          class="tab-btn text-left text-gray-700 hover:text-blue-600"
+          class="tab-btn text-left hover:text-blue-600"
           data-tab="addTour"
         >
           ➕ Thêm Tour
         </button>
         <button
-          class="tab-btn text-left text-gray-700 hover:text-blue-600"
+          class="tab-btn text-left hover:text-blue-600"
           data-tab="manageTour"
         >
           ✏️ Quản lý Tour
         </button>
         <button
-          class="tab-btn text-left text-gray-700 hover:text-blue-600"
+          class="tab-btn text-left hover:text-blue-600"
           data-tab="viewOrders"
         >
           🧾 Xem Đơn Đặt
         </button>
         <button
-          class="tab-btn text-left text-gray-700 hover:text-blue-600"
+          class="tab-btn text-left hover:text-blue-600"
           data-tab="confirmTour"
         >
           📥 Xác Nhận Tour
         </button>
         <button
-          class="tab-btn text-left text-gray-700 hover:text-blue-600"
+          class="tab-btn text-left hover:text-blue-600"
           data-tab="manageServices"
         >
-          🧳 Quản lý KS / Vé MB
+          🧳 Quản lý KS/Vé MB
         </button>
       </nav>
     </aside>
@@ -49,7 +49,6 @@
       <!-- Thêm Tour -->
       <section id="addTour" class="tab-content">
         <h2 class="text-xl font-bold mb-4">➕ Thêm Tour Mới</h2>
-
         <form
           id="addTourForm"
           class="grid grid-cols-1 md:grid-cols-2 gap-4"
@@ -84,52 +83,49 @@
             class="p-2 border rounded"
             required
           />
-          <input type="file" name="tourImage" accept="image/*" required />
-
+          <input
+            type="file"
+            name="tourImage"
+            accept="image/*"
+            class="col-span-1 md:col-span-2"
+            required
+          />
           <button
             type="submit"
-            class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 col-span-1 md:col-span-2"
+            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded col-span-1 md:col-span-2"
           >
             Thêm Tour
           </button>
-
           <p
             id="tourMessage"
-            class="col-span-1 md:col-span-2 font-semibold hidden"
+            class="hidden col-span-1 md:col-span-2 font-semibold"
           ></p>
         </form>
       </section>
 
       <!-- Quản lý Tour -->
-      <section id="manageTour" class="tab-content hidden p-4">
-        <h2 class="text-2xl font-bold mb-4 flex items-center gap-2">
-          <span>✏️ Quản lý Tour</span>
-        </h2>
-        <p class="mb-6 text-gray-600">
-          Danh sách tour sẽ được hiển thị ở đây với nút chỉnh sửa, ẩn/hiện, cập
-          nhật số chỗ còn lại.
-        </p>
-
+      <section id="manageTour" class="tab-content hidden">
+        <h2 class="text-2xl font-bold mb-4">✏️ Quản lý Tour</h2>
         <div class="overflow-x-auto">
-          <table
-            class="min-w-full border border-gray-300 rounded-lg overflow-hidden"
-          >
+          <table class="min-w-full border">
             <thead class="bg-gray-100">
               <tr>
                 <th class="px-4 py-2 border">Tên Tour</th>
                 <th class="px-4 py-2 border">Điểm đến</th>
                 <th class="px-4 py-2 border">Giá</th>
-                <th class="px-4 py-2 border">Số chỗ còn lại</th>
+                <th class="px-4 py-2 border">Số chỗ</th>
                 <th class="px-4 py-2 border">Ảnh</th>
-                <th class="px-4 py-2 border">Thao tác</th>
+                <th class="px-4 py-2 border">Hành động</th>
               </tr>
             </thead>
             <tbody id="tourList" class="text-center">
-              <!-- Các tour sẽ được thêm ở đây bằng JS -->
+              <!-- Tour sẽ được render bằng JS -->
             </tbody>
           </table>
         </div>
       </section>
+
+      <!-- Modal chỉnh sửa -->
       <div
         id="editTourModal"
         class="fixed inset-0 bg-black bg-opacity-40 hidden items-center justify-center z-50"
@@ -140,32 +136,31 @@
             <input
               type="text"
               id="editTourName"
-              class="border p-2 rounded"
-              placeholder="Tên Tour"
+              placeholder="Tên tour"
+              class="p-2 border rounded"
               required
             />
             <input
               type="text"
               id="editDestination"
-              class="border p-2 rounded"
               placeholder="Điểm đến"
+              class="p-2 border rounded"
               required
             />
             <input
               type="number"
               id="editPrice"
-              class="border p-2 rounded"
               placeholder="Giá"
+              class="p-2 border rounded"
               required
             />
             <input
               type="number"
               id="editSeats"
-              class="border p-2 rounded"
-              placeholder="Số chỗ còn lại"
+              placeholder="Số chỗ"
+              class="p-2 border rounded"
               required
             />
-
             <div class="flex justify-end gap-2">
               <button
                 type="button"
@@ -184,48 +179,47 @@
           </form>
         </div>
       </div>
-      <!-- Xem đơn đặt -->
+
+      <!-- Các tab khác -->
       <section id="viewOrders" class="tab-content hidden">
         <h2 class="text-xl font-bold mb-4">🧾 Xem Đơn Đặt</h2>
-        <p>Hiển thị các đơn hàng/tour đã được người dùng đặt.</p>
+        <p>Danh sách đơn đặt tour.</p>
       </section>
 
-      <!-- Xác nhận tour -->
       <section id="confirmTour" class="tab-content hidden">
         <h2 class="text-xl font-bold mb-4">📥 Xác Nhận Tour</h2>
-        <p>Gửi xác nhận thủ công đến khách đặt nếu cần.</p>
+        <p>Xác nhận thủ công đơn đặt tour.</p>
       </section>
 
-      <!-- Quản lý KS / Vé MB -->
       <section id="manageServices" class="tab-content hidden">
         <h2 class="text-xl font-bold mb-4">
-          🧳 Quản lý Khách sạn / Vé Máy Bay
+          🧳 Quản lý Khách sạn / Vé máy bay
         </h2>
-        <p>Cho phép thêm, chỉnh sửa khách sạn hoặc vé máy bay đi kèm tour.</p>
+        <p>Thêm/chỉnh sửa khách sạn và vé máy bay cho tour.</p>
       </section>
     </main>
 
     <!-- Script -->
     <script>
-      // Đổi tab
+      let selectedTourID = null;
+
+      // Chuyển tab
       document.querySelectorAll(".tab-btn").forEach((btn) => {
         btn.addEventListener("click", () => {
-          const tab = btn.getAttribute("data-tab");
+          const tab = btn.dataset.tab;
           document
             .querySelectorAll(".tab-content")
-            .forEach((el) => el.classList.add("hidden"));
+            .forEach((sec) => sec.classList.add("hidden"));
           document.getElementById(tab).classList.remove("hidden");
         });
       });
 
-      // Submit Thêm Tour
+      // Thêm Tour
       document
         .getElementById("addTourForm")
-        .addEventListener("submit", async function (e) {
+        .addEventListener("submit", async (e) => {
           e.preventDefault();
-
-          const form = e.target;
-          const formData = new FormData(form);
+          const formData = new FormData(e.target);
           const messageBox = document.getElementById("tourMessage");
 
           try {
@@ -235,105 +229,93 @@
             });
 
             const text = await res.text();
-            console.log("Server trả về:", text);
+            console.log(text);
 
             messageBox.classList.remove("hidden");
-
             if (res.ok) {
-              messageBox.innerText = "✅ Tour đã được thêm thành công!";
-              messageBox.classList.remove("text-red-600");
-              messageBox.classList.add("text-green-600");
-              form.reset();
+              messageBox.innerText = "✅ Thêm tour thành công!";
+              messageBox.className =
+                "text-green-600 font-semibold col-span-1 md:col-span-2";
+              e.target.reset();
+              fetchTours(); // Load lại danh sách
             } else {
-              messageBox.innerText = "❌ Thêm tour thất bại!";
-              messageBox.classList.remove("text-green-600");
-              messageBox.classList.add("text-red-600");
+              messageBox.innerText = "❌ Thêm tour thất bại.";
+              messageBox.className =
+                "text-red-600 font-semibold col-span-1 md:col-span-2";
             }
-          } catch (err) {
-            console.error("Lỗi fetch:", err);
-            messageBox.innerText = "❌ Không thể kết nối tới server.";
-            messageBox.classList.remove("text-green-600");
-            messageBox.classList.add("text-red-600");
-            messageBox.classList.remove("hidden");
+          } catch (error) {
+            console.error(error);
+            messageBox.innerText = "❌ Không thể kết nối server.";
+            messageBox.className =
+              "text-red-600 font-semibold col-span-1 md:col-span-2";
           }
         });
 
+      // Load danh sách tour
       async function fetchTours() {
         try {
-          const response = await fetch("/provider/tours");
-          const tours = await response.json();
-
+          const res = await fetch("/provider/tours");
+          const tours = await res.json();
           const tourList = document.getElementById("tourList");
-          tourList.innerHTML = ""; // Clear previous content
+          tourList.innerHTML = "";
 
           tours.forEach((tour) => {
-            const tourRow = document.createElement("tr");
-            tourRow.classList.add("hover:bg-gray-100");
-
-            tourRow.innerHTML = `
-        <td class="px-4 py-2 border tourName">${tour.TourName}</td>
-        <td class="px-4 py-2 border destination">${tour.Destination}</td>
-        <td class="px-4 py-2 border price">${tour.Price}</td>
-        <td class="px-4 py-2 border seats">${tour.SoCho}</td>
-        <td class="px-4 py-2 border">
-          <img src="${tour.ImageURL}" alt="${tour.TourName}" class="w-16 h-16 object-cover rounded">
-        </td>
-        <td class="px-4 py-2 border">
-          <button class="edit-tour-btn bg-yellow-500 hover:bg-yellow-600 text-white py-1 px-3 rounded mr-2">Chỉnh sửa</button>
-          <button class="delete-tour-btn bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded">Xóa</button>
-        </td>
-      `;
-
-            tourList.appendChild(tourRow);
+            const row = document.createElement("tr");
+            row.innerHTML = `
+              <td class="border px-4 py-2">${tour.TourName}</td>
+              <td class="border px-4 py-2">${tour.Destination}</td>
+              <td class="border px-4 py-2">${tour.Price}</td>
+              <td class="border px-4 py-2">${tour.SoCho}</td>
+              <td class="border px-4 py-2">
+                <img src="${tour.ImageURL}" alt="Tour Image" class="w-16 h-16 object-cover rounded">
+              </td>
+              <td class="border px-4 py-2">
+                <button class="edit-tour-btn bg-yellow-500 hover:bg-yellow-600 text-white py-1 px-2 rounded mr-2" data-id="${tour.TourID}">Chỉnh sửa</button>
+                <button class="delete-tour-btn bg-red-500 hover:bg-red-600 text-white py-1 px-2 rounded" data-id="${tour.TourID}">Xóa</button>
+              </td>
+            `;
+            tourList.appendChild(row);
           });
         } catch (error) {
-          console.error("Lỗi khi lấy danh sách tour:", error);
+          console.error("Lỗi khi load tour:", error);
         }
       }
-
       fetchTours();
-      let selectedTourID = null;
-      // Sự kiện chỉnh sửa tour
-      document.addEventListener("click", function (e) {
-        if (e.target.classList.contains("edit-tour-btn")) {
-          const row = e.target.closest("tr");
-          selectedTourID = row.querySelector(".tourID").innerText;
-          const tourName = row.querySelector(".tourName").innerText;
-          const destination = row.querySelector(".destination").innerText;
-          const price = row.querySelector(".price").innerText;
-          const seats = row.querySelector(".seats").innerText;
 
-          // Mở form chỉnh sửa với dữ liệu hiện tại
-          document.getElementById("editTourForm").style.display = "block";
-          document.getElementById("editTourName").value = tourName;
-          document.getElementById("editDestination").value = destination;
-          document.getElementById("editPrice").value = price;
-          document.getElementById("editSeats").value = seats;
+      // Chỉnh sửa tour
+      document.addEventListener("click", (e) => {
+        if (e.target.classList.contains("edit-tour-btn")) {
+          selectedTourID = e.target.dataset.id;
+          const row = e.target.closest("tr");
+          document.getElementById("editTourName").value =
+            row.children[0].innerText;
+          document.getElementById("editDestination").value =
+            row.children[1].innerText;
+          document.getElementById("editPrice").value =
+            row.children[2].innerText;
+          document.getElementById("editSeats").value =
+            row.children[3].innerText;
+          document.getElementById("editTourModal").classList.remove("hidden");
         }
       });
 
-      // Gắn 1 lần duy nhất khi load trang
+      document.getElementById("cancelEdit").addEventListener("click", () => {
+        document.getElementById("editTourModal").classList.add("hidden");
+      });
+
       document
         .getElementById("editTourForm")
-        .addEventListener("submit", async function (e) {
+        .addEventListener("submit", async (e) => {
           e.preventDefault();
-
-          const tourName = document.getElementById("editTourName").value;
-          const destination = document.getElementById("editDestination").value;
-          const price = document.getElementById("editPrice").value;
-          const seats = document.getElementById("editSeats").value;
-
           try {
             const res = await fetch(`/provider/edit-tour/${selectedTourID}`, {
               method: "PUT",
-              headers: {
-                "Content-Type": "application/json",
-              },
+              headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
-                TourName: tourName,
-                Destination: destination,
-                Price: price,
-                SoCho: seats,
+                tourName: document.getElementById("editTourName").value,
+                destination: document.getElementById("editDestination").value,
+                price: document.getElementById("editPrice").value,
+                seats: document.getElementById("editSeats").value,
               }),
             });
 
@@ -341,118 +323,41 @@
             console.log(text);
 
             if (res.ok) {
-              alert("✅ Tour đã được cập nhật thành công!");
-              location.reload();
+              alert("✅ Cập nhật thành công!");
+              document.getElementById("editTourModal").classList.add("hidden");
+              fetchTours();
             } else {
               alert("❌ Không thể cập nhật tour.");
             }
           } catch (err) {
-            console.error("Lỗi khi chỉnh sửa tour:", err);
+            console.error("Lỗi chỉnh sửa tour:", err);
           }
         });
 
-      // Sự kiện xóa tour
-      document.addEventListener("click", async function (e) {
+      // Xóa tour
+      document.addEventListener("click", async (e) => {
         if (e.target.classList.contains("delete-tour-btn")) {
-          const row = e.target.closest("tr");
-          const tourID = row.querySelector(".tourID").innerText;
-
-          if (confirm("Bạn có chắc chắn muốn xóa tour này?")) {
+          const id = e.target.dataset.id;
+          if (confirm("Bạn chắc chắn muốn xóa tour này?")) {
             try {
-              const res = await fetch(`/provider/delete-tour/${tourID}`, {
+              const res = await fetch(`/provider/delete-tour/${id}`, {
                 method: "DELETE",
               });
-
               const text = await res.text();
               console.log(text);
 
               if (res.ok) {
-                alert("Tour đã được xóa!");
-                row.remove(); // Xóa tour khỏi bảng
+                alert("Đã xóa thành công!");
+                fetchTours();
               } else {
-                alert("Không thể xóa tour.");
+                alert("❌ Xóa thất bại.");
               }
-            } catch (err) {
-              console.error("Lỗi khi xóa tour:", err);
+            } catch (error) {
+              console.error("Lỗi khi xóa:", error);
             }
           }
         }
       });
-      let currentEditingTourID = null;
-
-      // Gọi khi bấm vào nút "Chỉnh sửa"
-      document.addEventListener("click", function (e) {
-        if (e.target.classList.contains("edit-tour-btn")) {
-          const row = e.target.closest("tr");
-
-          currentEditingTourID = row
-            .querySelector(".tourName")
-            .innerText.trim(); // ID bạn cần tùy chỉnh nếu khác
-
-          document.getElementById("editTourName").value = row
-            .querySelector(".tourName")
-            .innerText.trim();
-          document.getElementById("editDestination").value = row
-            .querySelector(".destination")
-            .innerText.trim();
-          document.getElementById("editPrice").value = row
-            .querySelector(".price")
-            .innerText.trim();
-          document.getElementById("editSeats").value = row
-            .querySelector(".seats")
-            .innerText.trim();
-
-          document.getElementById("editTourModal").classList.remove("hidden");
-          document.getElementById("editTourModal").classList.add("flex");
-        }
-      });
-
-      // Đóng Modal
-      document
-        .getElementById("cancelEdit")
-        .addEventListener("click", function () {
-          document.getElementById("editTourModal").classList.add("hidden");
-        });
-
-      // Submit Form Chỉnh sửa
-      document
-        .getElementById("editTourForm")
-        .addEventListener("submit", async function (e) {
-          e.preventDefault();
-
-          const formData = {
-            TourName: document.getElementById("editTourName").value,
-            Destination: document.getElementById("editDestination").value,
-            Price: document.getElementById("editPrice").value,
-            SoCho: document.getElementById("editSeats").value,
-          };
-
-          try {
-            const res = await fetch(
-              `/provider/edit-tour/${currentEditingTourID}`,
-              {
-                method: "PUT",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify(formData),
-              }
-            );
-
-            const text = await res.text();
-            console.log("Kết quả chỉnh sửa:", text);
-
-            if (res.ok) {
-              alert("✅ Tour đã được cập nhật thành công!");
-              document.getElementById("editTourModal").classList.add("hidden");
-              fetchTours(); // Tải lại danh sách tour sau khi sửa
-            } else {
-              alert("❌ Không thể cập nhật tour.");
-            }
-          } catch (err) {
-            console.error("Lỗi khi chỉnh sửa tour:", err);
-          }
-        });
     </script>
   </body>
 </html>
