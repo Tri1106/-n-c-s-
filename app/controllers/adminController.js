@@ -97,5 +97,49 @@ router.get("/user/data", async (req, res) => {
   }
 });
 
+router.put("/user/:id", async (req, res) => {
+  const userID = req.params.id;
+  const { Email, Phone, FullName } = req.body;
+
+  try {
+    const pool = await db.connect();
+    await pool
+      .request()
+      .input("Email", db.sql.VarChar, Email)
+      .input("Phone", db.sql.VarChar, Phone)
+      .input("FullName", db.sql.NVarChar, FullName)
+      .input("UserID", db.sql.VarChar, userID).query(`
+        UPDATE Users
+        SET Email = @Email, Phone = @Phone, FullName = @FullName
+        WHERE UserID = @UserID
+      `);
+
+    res.json({ message: "✅ Cập nhật người dùng thành công!" });
+  } catch (err) {
+    console.error("❌ Lỗi cập nhật user:", err);
+    res.status(500).json({ message: "❌ Cập nhật thất bại" });
+  }
+});
+
+router.delete("/user/:id", async (req, res) => {
+  const userID = req.params.id;
+
+  try {
+    const pool = await db.connect();
+    await pool
+      .request()
+      .input("UserID", db.sql.VarChar, userID)
+      .query("DELETE FROM Providers WHERE UserID = @UserID");
+    await pool
+      .request()
+      .input("UserID", db.sql.VarChar, userID)
+      .query("DELETE FROM Users WHERE UserID = @UserID");
+
+    res.json({ message: "✅ Xóa người dùng thành công!" });
+  } catch (err) {
+    console.error("❌ Lỗi xóa người dùng:", err);
+    res.status(500).json({ message: "❌ Xóa thất bại" });
+  }
+});
 
 module.exports = router;

@@ -111,19 +111,31 @@
           <!-- Dữ liệu người dùng sẽ được thêm vào đây thông qua JavaScript -->
         </tbody>
       </table>
+      <div id="editFormContainer" style="display: none; margin-top: 20px">
+        <h3>Sửa thông tin người dùng</h3>
+        <form id="editUserForm">
+          <input type="hidden" id="editUserID" />
+          <label>Email: <input type="email" id="editEmail" required /></label
+          ><br />
+          <label>Phone: <input type="text" id="editPhone" required /></label
+          ><br />
+          <label
+            >Full Name: <input type="text" id="editFullName" required /></label
+          ><br />
+          <button type="submit">Lưu thay đổi</button>
+          <button type="button" onclick="hideEditForm()">Hủy</button>
+        </form>
+      </div>
     </main>
 
     <script>
-      // Fetch danh sách user từ API
+      // Lấy danh sách user và hiển thị
       fetch("/user/data")
         .then((response) => response.json())
         .then((users) => {
-          console.log(users); // Kiểm tra trên console
           const tableBody = document.getElementById("userList");
-
           users.forEach((user) => {
             const row = document.createElement("tr");
-
             row.innerHTML = `
               <td>${user.UserID}</td>
               <td>${user.Email}</td>
@@ -131,16 +143,83 @@
               <td>${user.FullName}</td>
               <td>${user.Role}</td>
               <td>
-                <div class="action-buttons">
-                  <button class="edit-btn">Sửa</button>
-                  <button class="delete-btn">Xóa</button>
-                </div>
+                <button class="edit-btn"
+                  data-id="${user.UserID}"
+                  data-email="${user.Email}"
+                  data-phone="${user.Phone}"
+                  data-name="${user.FullName}">Sửa</button>
+                <button onclick="deleteUser('${user.UserID}')">Xóa</button>
               </td>
             `;
             tableBody.appendChild(row);
           });
+
+          // Gắn sự kiện cho nút Sửa sau khi bảng đã được render
+          document.querySelectorAll(".edit-btn").forEach((btn) => {
+            btn.addEventListener("click", () => {
+              document.getElementById("editUserID").value = btn.dataset.id;
+              document.getElementById("editEmail").value = btn.dataset.email;
+              document.getElementById("editPhone").value = btn.dataset.phone;
+              document.getElementById("editFullName").value = btn.dataset.name;
+              document.getElementById("editFormContainer").style.display =
+                "block";
+            });
+          });
         })
-        .catch((error) => console.error("❌ Lỗi khi fetch dữ liệu:", error));
+        .catch((err) => {
+          console.error("❌ Lỗi khi tải dữ liệu người dùng:", err);
+        });
+
+      // Ẩn form sửa
+      function hideEditForm() {
+        document.getElementById("editFormContainer").style.display = "none";
+      }
+
+      // Gửi yêu cầu cập nhật (PUT)
+      document
+        .getElementById("editUserForm")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+          const userID = document.getElementById("editUserID").value;
+          const data = {
+            Email: document.getElementById("editEmail").value,
+            Phone: document.getElementById("editPhone").value,
+            FullName: document.getElementById("editFullName").value,
+          };
+
+          fetch(`/user/${userID}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+          })
+            .then((res) => res.json())
+            .then((result) => {
+              alert(result.message);
+              location.reload();
+            })
+            .catch((err) => {
+              console.error("❌ Lỗi khi cập nhật:", err);
+              alert("❌ Có lỗi xảy ra khi cập nhật!");
+            });
+        });
+
+      // Gửi yêu cầu xóa (DELETE)
+      function deleteUser(userID) {
+        if (!confirm("Bạn có chắc chắn muốn xóa người dùng này?")) return;
+
+        fetch(`/user/${userID}`, {
+          method: "DELETE",
+        })
+          .then((res) => res.json())
+          .then((result) => {
+            alert(result.message);
+            location.reload();
+          })
+          .catch((err) => {
+            console.error("❌ Lỗi xóa người dùng:", err);
+            alert("❌ Có lỗi xảy ra khi xóa!");
+          });
+      }
     </script>
   </body>
 </html>
