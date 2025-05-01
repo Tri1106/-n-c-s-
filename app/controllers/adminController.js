@@ -97,6 +97,31 @@ router.get("/user/data", async (req, res) => {
   }
 });
 
+router.get("/tour", (req, res) => {
+  const filePath = path.join(
+    __dirname,
+    "..",
+    "..",
+    "app",
+    "views",
+    "home",
+    "listtour.html"
+  );
+  res.sendFile(filePath);
+});
+
+// API lấy dữ liệu user
+router.get("/tour/data", async (req, res) => {
+  try {
+    const pool = await db.connect();
+    const result = await pool.request().query("SELECT * FROM dbo.Tours");
+    res.json(result.recordset); // Trả dữ liệu JSON về phía frontend
+  } catch (err) {
+    console.error("Lỗi lấy dữ liệu tour:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 router.put("/user/:id", async (req, res) => {
   const userID = req.params.id;
   const { Email, Phone, FullName } = req.body;
