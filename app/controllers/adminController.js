@@ -4,6 +4,8 @@ const bcrypt = require("bcryptjs");
 const path = require("path"); // Import path
 const db = require("../../db"); // Chỉ gọi 1 lần db, tránh trùng
 const session = require("express-session");
+const { error } = require("console");
+const { getSystemErrorMessage } = require("util");
 
 // Route cho admin-dashboard
 router.get("/admin-dashboard", async (req, res) => {
@@ -65,10 +67,12 @@ router.post("/register-provider", async (req, res) => {
         )
       `);
 
-    res.send("✅ Tạo nhà cung cấp thành công!");
+    res.json({ success: true });
   } catch (err) {
     console.error(err);
-    res.status(500).send("❌ Lỗi khi tạo nhà cung cấp");
+    res
+      .status(500)
+      .json({ success: false, errorMessage: "❌ Lỗi khi tạo nhà cung cấp" });
   }
 });
 
@@ -93,31 +97,6 @@ router.get("/user/data", async (req, res) => {
     res.json(result.recordset); // Trả dữ liệu JSON về phía frontend
   } catch (err) {
     console.error("Lỗi lấy dữ liệu Users:", err);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-router.get("/tour", (req, res) => {
-  const filePath = path.join(
-    __dirname,
-    "..",
-    "..",
-    "app",
-    "views",
-    "home",
-    "listtour.html"
-  );
-  res.sendFile(filePath);
-});
-
-// API lấy dữ liệu user
-router.get("/tour/data", async (req, res) => {
-  try {
-    const pool = await db.connect();
-    const result = await pool.request().query("SELECT * FROM dbo.Tours");
-    res.json(result.recordset); // Trả dữ liệu JSON về phía frontend
-  } catch (err) {
-    console.error("Lỗi lấy dữ liệu tour:", err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -167,4 +146,31 @@ router.delete("/user/:id", async (req, res) => {
   }
 });
 
+router.get("/tours", (req, res) => {
+  const filePath = path.join(
+    __dirname,
+    "..",
+    "..",
+    "app",
+    "views",
+    "home",
+    "listtour.html"
+  );
+  res.sendFile(filePath);
+});
+
+// API lấy dữ liệu user
+router.get("/tours/data", async (req, res) => {
+  try {
+    const pool = await db.connect();
+    const result = await pool.request().query(`
+      SELECT TourName, Destination, Price, ImageURL, SoCho
+      FROM Tours
+    `);
+    res.json(result.recordset); // Trả dữ liệu JSON về phía frontend
+  } catch (err) {
+    console.error("Lỗi lấy dữ liệu tour:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
 module.exports = router;

@@ -89,7 +89,7 @@
           <li>💵 Doanh thu</li>
           <li>📊 Thống kê</li>
           <li>🧾 Quản lý đơn đặt</li>
-          <li><a href="/home">Đăng xuất</a></li>
+          <li><a href="/admin-dashboard">Quay Lại</a></li>
         </ul>
       </nav>
     </header>
@@ -100,9 +100,11 @@
         <thead>
           <tr>
             <th>Tên Tour</th>
-            <th>Thông tin Tour</th>
+            <th>Điểm Đến</th>
             <th>Giá Tour</th>
-            <th>Trạng thái</th>
+            <th>Hình Ảnh</th>
+            <th>Số chổ</th>
+            <th>Hành Động</th>
           </tr>
         </thead>
         <tbody id="userTableBody">
@@ -124,6 +126,27 @@
           <button type="button" onclick="hideEditForm()">Hủy</button>
         </form>
       </div>
+      <script>
+        fetch("/tours/data")
+          .then((response) => response.json())
+          .then((tours) => {
+            const tableBody = document.getElementById("tourList");
+            tours.forEach((tour) => {
+              const row = document.createElement("tr");
+              row.innerHTML = `
+                <td>${tour.TourName}</td>
+                <td>${tour.Destination}</td>
+                <td>${tour.Price}</td>
+                <td><img src="${tour.ImageURL}" alt="Tour Image" width="100"/></td>
+                <td>${tour.SoCho}</td>
+              `;
+              tableBody.appendChild(row);
+            });
+          })
+          .catch((error) => {
+            console.error("❌ Lỗi khi lấy danh sách tours:", error);
+          });
+      </script>
     </main>
-
-    
+  </body>
+</html>
