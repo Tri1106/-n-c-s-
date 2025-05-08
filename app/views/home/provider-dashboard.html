@@ -41,7 +41,7 @@
         >
           🧳 Quản lý KS/Vé MB
         </button>
-        <a class="tab-btn text-left hover:text-blue-600" href="/home">Đăng Xuất</a>
+        <a class="text-left hover:text-blue-600" href="/home">Đăng Xuất</a>
       </nav>
     </aside>
 
@@ -196,7 +196,110 @@
         <h2 class="text-xl font-bold mb-4">
           🧳 Quản lý Khách sạn / Vé máy bay
         </h2>
-        <p>Thêm/chỉnh sửa khách sạn và vé máy bay cho tour.</p>
+
+        <!-- Tabs nội bộ -->
+        <div class="flex gap-4 mb-4">
+          <button
+            class="sub-tab-btn bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded"
+            data-subtab="manageHotels"
+          >
+            🏨 Khách sạn
+          </button>
+          <button
+            class="sub-tab-btn bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded"
+            data-subtab="manageFlights"
+          >
+            ✈️ Vé máy bay
+          </button>
+        </div>
+
+        <!-- Quản lý khách sạn -->
+        <div id="manageHotels" class="sub-tab hidden">
+          <form
+            id="hotelForm"
+            class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6"
+          >
+            <input
+              type="text"
+              name="hotelName"
+              placeholder="Tên khách sạn"
+              class="p-2 border rounded"
+              required
+            />
+            <input
+              type="text"
+              name="location"
+              placeholder="Vị trí"
+              class="p-2 border rounded"
+              required
+            />
+            <input
+              type="number"
+              name="pricePerNight"
+              placeholder="Giá/đêm"
+              class="p-2 border rounded"
+              required
+            />
+            <input
+              type="file"
+              name="hotelImage"
+              accept="image/*"
+              class="col-span-1 md:col-span-2"
+              required
+            />
+            <button
+              type="submit"
+              class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded col-span-1 md:col-span-2"
+            >
+            
+              ➕ Thêm Khách sạn
+            </button>
+          </form>
+          <div id="hotelList" class="space-y-2"></div>
+        </div>
+
+        <!-- Quản lý vé máy bay -->
+        <div id="manageFlights" class="sub-tab hidden">
+          <form
+            id="flightForm"
+            class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6"
+          >
+            <input
+              type="text"
+              name="airline"
+              placeholder="Hãng bay"
+              class="p-2 border rounded"
+              required
+            />
+            <input
+              type="text"
+              name="fromTo"
+              placeholder="Điểm đi - đến"
+              class="p-2 border rounded"
+              required
+            />
+            <input
+              type="number"
+              name="flightPrice"
+              placeholder="Giá vé"
+              class="p-2 border rounded"
+              required
+            />
+            <input
+              type="datetime-local"
+              name="departTime"
+              class="p-2 border rounded"
+              required
+            />
+            <button
+              type="submit"
+              class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded col-span-1 md:col-span-2"
+            >
+              ➕ Thêm Vé máy bay
+            </button>
+          </form>
+          <div id="flightList" class="space-y-2"></div>
+        </div>
       </section>
     </main>
 
@@ -359,6 +462,56 @@
           }
         }
       });
+
+      document.querySelectorAll(".sub-tab-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          document
+            .querySelectorAll(".sub-tab")
+            .forEach((tab) => tab.classList.add("hidden"));
+          const id = btn.dataset.subtab;
+          document.getElementById(id).classList.remove("hidden");
+        });
+      });
+
+      // Gửi khách sạn
+      document
+        .getElementById("hotelForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const formData = new FormData(e.target);
+          try {
+            const res = await fetch("/provider/add-hotel", {
+              method: "POST",
+              body: formData,
+            });
+            const result = await res.text();
+            alert(result);
+            e.target.reset();
+          } catch (err) {
+            console.error(err);
+            alert("❌ Lỗi khi thêm khách sạn.");
+          }
+        });
+
+      // Gửi vé máy bay
+      document
+        .getElementById("flightForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const formData = new FormData(e.target);
+          try {
+            const res = await fetch("/provider/add-flight", {
+              method: "POST",
+              body: formData,
+            });
+            const result = await res.text();
+            alert(result);
+            e.target.reset();
+          } catch (err) {
+            console.error(err);
+            alert("❌ Lỗi khi thêm vé máy bay.");
+          }
+        });
     </script>
   </body>
 </html>

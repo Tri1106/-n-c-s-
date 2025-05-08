@@ -108,4 +108,17 @@ router.get("/provider-dashboard", (req, res) => {
   }
 });
 
+router.get("/tour-list", (req, res) => {
+  const filePath = path.join(
+    __dirname,
+    "..",
+    "..",
+    "app",
+    "views",
+    "home",
+    "tour-list.html"
+  );
+  res.sendFile(filePath);
+});
+
 module.exports = router;
