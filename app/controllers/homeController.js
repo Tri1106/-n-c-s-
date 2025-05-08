@@ -108,17 +108,32 @@ router.get("/provider-dashboard", (req, res) => {
   }
 });
 
-router.get("/tour-list", (req, res) => {
-  const filePath = path.join(
-    __dirname,
-    "..",
-    "..",
-    "app",
-    "views",
-    "home",
-    "tour-list.html"
-  );
-  res.sendFile(filePath);
+router.get("/api/tours", async (req, res) => {
+  try {
+    const pool = await connect();
+    const result = await pool.request().query("SELECT TourID, ProviderID, TourName AS TenTour, Destination, Price AS Gia, Status, ImageURL AS HinhAnh, SoCho FROM Tours");
+    res.json(result.recordset); // Trả dữ liệu dạng JSON
+  } catch (err) {
+    console.error("Lỗi khi lấy dữ liệu tour:", err);
+    res.status(500).json({ error: "Lỗi server" });
+  }
+});
+
+router.get("/api/tours/:id", async (req, res) => {
+  const tourId = req.params.id;
+  try {
+    const pool = await connect();
+    const result = await pool.request()
+      .input('tourId', tourId)
+      .query("SELECT TourID, ProviderID, TourName AS TenTour, Destination, Price AS Gia, Status, ImageURL AS HinhAnh, SoCho FROM Tours WHERE TourID = @tourId");
+    if (result.recordset.length === 0) {
+      return res.status(404).json({ error: "Tour không tồn tại" });
+    }
+    res.json(result.recordset[0]);
+  } catch (err) {
+    console.error("Lỗi khi lấy dữ liệu tour theo ID:", err);
+    res.status(500).json({ error: "Lỗi server" });
+  }
 });
 
 module.exports = router;

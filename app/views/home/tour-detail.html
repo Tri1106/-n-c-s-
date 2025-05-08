@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chi tiết Tour Thái Lan</title>
+  <title>Chi tiết Tour</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -113,43 +113,88 @@
 </head>
 <body>
 
-<h1>Thái Lan: Bangkok - Pattaya</h1>
+<h1 id="tour-title">Loading...</h1>
 
 <div class="container">
   <!-- Sidebar image list -->
-  <div class="sidebar">
-    <img src="https://via.placeholder.com/100x70" alt="ảnh nhỏ">
-    <img src="https://via.placeholder.com/100x70" alt="ảnh nhỏ">
-    <img src="https://via.placeholder.com/100x70" alt="ảnh nhỏ">
-    <img src="https://via.placeholder.com/100x70" alt="ảnh nhỏ">
+  <div class="sidebar" id="sidebar-images">
+    <!-- Images will be inserted here -->
   </div>
 
   <!-- Main tour image -->
   <div class="main-image">
-    <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e" alt="ảnh tour chính">
+    <img id="main-image" src="" alt="ảnh tour chính">
   </div>
 
   <!-- Tour Info -->
   <div class="info-box">
-    <h2>5.490.000 đ / Khách</h2>
-    <div class="old-price">5.990.000 đ</div>
-    <div class="tagline">🎁 Đặt ngay để tiết kiệm thêm 500K</div>
+    <h2 id="tour-price">Loading...</h2>
+    <div class="old-price" id="old-price"></div>
+    <div class="tagline" id="tagline"></div>
     
-    <ul>
-      <li>🆔 Mã tour: NNSGN130-024-200425VU-V-F</li>
-      <li>📍 Khởi hành: TP. Hồ Chí Minh</li>
-      <li>🗓️ Ngày: 20/04/2025</li>
-      <li>⏱️ Thời gian: 5N4Đ</li>
-      <li>👥 Số chỗ còn: 5</li>
+    <ul id="tour-details-list">
+      <!-- Tour details will be inserted here -->
     </ul>
 
-    <button>Đặt ngay</button>
+    <button id="book-now-btn">Đặt ngay</button>
     <div class="actions">
       <button>📞 Gọi miễn phí</button>
       <button>💬 Liên hệ tư vấn</button>
     </div>
   </div>
 </div>
+
+<script>
+  function getQueryParam(param) {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(param);
+  }
+
+  async function loadTourDetails() {
+    const tourId = getQueryParam('tourId');
+    if (!tourId) {
+      alert('Không tìm thấy mã tour.');
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/tours/${tourId}`);
+      if (!res.ok) {
+        alert('Không tìm thấy tour.');
+        return;
+      }
+      const tour = await res.json();
+
+      document.getElementById('tour-title').textContent = tour.TenTour;
+      document.getElementById('main-image').src = tour.HinhAnh;
+      document.getElementById('main-image').alt = tour.TenTour;
+
+      document.getElementById('tour-price').textContent = `Giá: ${Number(tour.Gia).toLocaleString()} VNĐ`;
+      document.getElementById('old-price').textContent = ''; // No old price data available
+      document.getElementById('tagline').textContent = ''; // No tagline data available
+
+      const detailsList = document.getElementById('tour-details-list');
+      detailsList.innerHTML = `
+        <li>🆔 Mã tour: ${tour.TourID}</li>
+        <li>📍 Điểm đến: ${tour.Destination}</li>
+        <li>👥 Số chỗ còn: ${tour.SoCho}</li>
+        <li>📅 Ngày khởi hành: Chưa có dữ liệu</li>
+        <li>⏱️ Thời gian: Chưa có dữ liệu</li>
+      `;
+
+      // You can add event listener for booking button here
+      document.getElementById('book-now-btn').onclick = () => {
+        alert('Chức năng đặt tour đang được phát triển.');
+      };
+
+    } catch (error) {
+      alert('Lỗi khi tải chi tiết tour.');
+      console.error(error);
+    }
+  }
+
+  window.onload = loadTourDetails;
+</script>
 
 </body>
 </html>

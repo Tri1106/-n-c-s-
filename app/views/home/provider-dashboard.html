@@ -215,90 +215,106 @@
 
         <!-- Quản lý khách sạn -->
         <div id="manageHotels" class="sub-tab hidden">
-          <form
-            id="hotelForm"
-            class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6"
+        <form
+          id="hotelForm"
+          class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6"
+        >
+          <select
+            name="tourID"
+            id="hotelTourSelect"
+            class="p-2 border rounded"
+            required
           >
-            <input
-              type="text"
-              name="hotelName"
-              placeholder="Tên khách sạn"
-              class="p-2 border rounded"
-              required
-            />
-            <input
-              type="text"
-              name="location"
-              placeholder="Vị trí"
-              class="p-2 border rounded"
-              required
-            />
-            <input
-              type="number"
-              name="pricePerNight"
-              placeholder="Giá/đêm"
-              class="p-2 border rounded"
-              required
-            />
-            <input
-              type="file"
-              name="hotelImage"
-              accept="image/*"
-              class="col-span-1 md:col-span-2"
-              required
-            />
-            <button
-              type="submit"
-              class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded col-span-1 md:col-span-2"
-            >
-            
-              ➕ Thêm Khách sạn
-            </button>
-          </form>
-          <div id="hotelList" class="space-y-2"></div>
+            <option value="">Chọn Tour</option>
+          </select>
+          <input
+            type="text"
+            name="hotelName"
+            placeholder="Tên khách sạn"
+            class="p-2 border rounded"
+            required
+          />
+          <input
+            type="text"
+            name="location"
+            placeholder="Vị trí"
+            class="p-2 border rounded"
+            required
+          />
+          <input
+            type="number"
+            name="pricePerNight"
+            placeholder="Giá/đêm"
+            class="p-2 border rounded"
+            required
+          />
+          <input
+            type="file"
+            name="hotelImage"
+            accept="image/*"
+            class="col-span-1 md:col-span-2"
+            required
+          />
+          <button
+            type="submit"
+            class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded col-span-1 md:col-span-2"
+          >
+          
+            ➕ Thêm Khách sạn
+          </button>
+        </form>
+        <div id="hotelList" class="space-y-2"></div>
         </div>
 
         <!-- Quản lý vé máy bay -->
         <div id="manageFlights" class="sub-tab hidden">
-          <form
-            id="flightForm"
-            class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6"
+        <form
+          id="flightForm"
+          class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6"
+        >
+          <select
+            name="tourID"
+            id="flightTourSelect"
+            class="p-2 border rounded"
+            required
           >
-            <input
-              type="text"
-              name="airline"
-              placeholder="Hãng bay"
-              class="p-2 border rounded"
-              required
-            />
-            <input
-              type="text"
-              name="fromTo"
-              placeholder="Điểm đi - đến"
-              class="p-2 border rounded"
-              required
-            />
-            <input
-              type="number"
-              name="flightPrice"
-              placeholder="Giá vé"
-              class="p-2 border rounded"
-              required
-            />
-            <input
-              type="datetime-local"
-              name="departTime"
-              class="p-2 border rounded"
-              required
-            />
-            <button
-              type="submit"
-              class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded col-span-1 md:col-span-2"
-            >
-              ➕ Thêm Vé máy bay
-            </button>
-          </form>
-          <div id="flightList" class="space-y-2"></div>
+            <option value="">Chọn Tour</option>
+          </select>
+          <input
+            type="text"
+            name="airline"
+            placeholder="Hãng bay"
+            class="p-2 border rounded"
+            required
+          />
+          <input
+            type="text"
+            name="fromTo"
+            placeholder="Điểm đi - đến"
+            class="p-2 border rounded"
+            required
+          />
+          <input
+            type="number"
+            name="flightPrice"
+            placeholder="Giá vé"
+            class="p-2 border rounded"
+            required
+          />
+          <input
+            type="datetime-local"
+            name="departTime"
+            class="p-2 border rounded"
+            required
+          />
+          <button
+            type="submit"
+            class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded col-span-1 md:col-span-2"
+          >
+            ➕ Thêm Vé máy bay
+          </button>
+        </form>
+        <div id="flightList" class="space-y-2"></div>
         </div>
       </section>
     </main>
@@ -480,6 +496,12 @@
           e.preventDefault();
           const formData = new FormData(e.target);
           try {
+            const tourID = document.getElementById("hotelTourSelect").value;
+            if (!tourID) {
+              alert("Vui lòng chọn tour cho khách sạn.");
+              return;
+            }
+            formData.append("tourID", tourID);
             const res = await fetch("/provider/add-hotel", {
               method: "POST",
               body: formData,
@@ -500,6 +522,12 @@
           e.preventDefault();
           const formData = new FormData(e.target);
           try {
+            const tourID = document.getElementById("flightTourSelect").value;
+            if (!tourID) {
+              alert("Vui lòng chọn tour cho vé máy bay.");
+              return;
+            }
+            formData.append("tourID", tourID);
             const res = await fetch("/provider/add-flight", {
               method: "POST",
               body: formData,
@@ -512,6 +540,33 @@
             alert("❌ Lỗi khi thêm vé máy bay.");
           }
         });
+    </script>
+    <script>
+      // Load tours for dropdowns
+      async function loadProviderTours() {
+        try {
+          const res = await fetch("/provider/tours");
+          const tours = await res.json();
+
+          const hotelSelect = document.getElementById("hotelTourSelect");
+          const flightSelect = document.getElementById("flightTourSelect");
+
+          tours.forEach((tour) => {
+            const option1 = document.createElement("option");
+            option1.value = tour.TourID;
+            option1.textContent = tour.TourName;
+            hotelSelect.appendChild(option1);
+
+            const option2 = document.createElement("option");
+            option2.value = tour.TourID;
+            option2.textContent = tour.TourName;
+            flightSelect.appendChild(option2);
+          });
+        } catch (error) {
+          console.error("Lỗi khi tải danh sách tour:", error);
+        }
+      }
+      loadProviderTours();
     </script>
   </body>
 </html>

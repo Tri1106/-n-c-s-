@@ -125,4 +125,66 @@ router.delete("/delete-tour/:tourID", async (req, res) => {
   }
 });
 
+// Route thêm khách sạn
+router.post("/add-hotel", async (req, res) => {
+  try {
+    const { tourID, hotelName, location, pricePerNight } = req.body;
+    // For image upload, assuming no file upload here for simplicity
+    if (!tourID || !hotelName || !location || !pricePerNight) {
+      return res.status(400).send("❌ Thiếu thông tin khách sạn.");
+    }
+
+    const pool = await connect();
+    const hotelID = "H" + Date.now();
+
+    await pool
+      .request()
+      .input("HotelID", sql.VarChar, hotelID)
+      .input("TourID", sql.VarChar, tourID)
+      .input("HotelName", sql.NVarChar, hotelName)
+      .input("Location", sql.NVarChar, location)
+      .input("PricePerNight", sql.Decimal(10, 2), pricePerNight)
+      .query(`
+        INSERT INTO Hotels (HotelID, TourID, HotelName, Location, PricePerNight)
+        VALUES (@HotelID, @TourID, @HotelName, @Location, @PricePerNight)
+      `);
+
+    res.send("✅ Khách sạn đã được thêm thành công!");
+  } catch (err) {
+    console.error("❌ Lỗi khi thêm khách sạn:", err);
+    res.status(500).send("❌ Lỗi khi thêm khách sạn.");
+  }
+});
+
+// Route thêm vé máy bay
+router.post("/add-flight", async (req, res) => {
+  try {
+    const { tourID, airline, fromTo, flightPrice, departTime } = req.body;
+    if (!tourID || !airline || !fromTo || !flightPrice || !departTime) {
+      return res.status(400).send("❌ Thiếu thông tin vé máy bay.");
+    }
+
+    const pool = await connect();
+    const flightID = "F" + Date.now();
+
+    await pool
+      .request()
+      .input("FlightID", sql.VarChar, flightID)
+      .input("TourID", sql.VarChar, tourID)
+      .input("Airline", sql.NVarChar, airline)
+      .input("FromTo", sql.NVarChar, fromTo)
+      .input("FlightPrice", sql.Decimal(10, 2), flightPrice)
+      .input("DepartTime", sql.DateTime, new Date(departTime))
+      .query(`
+        INSERT INTO Flights (FlightID, TourID, Airline, FromTo, FlightPrice, DepartTime)
+        VALUES (@FlightID, @TourID, @Airline, @FromTo, @FlightPrice, @DepartTime)
+      `);
+
+    res.send("✅ Vé máy bay đã được thêm thành công!");
+  } catch (err) {
+    console.error("❌ Lỗi khi thêm vé máy bay:", err);
+    res.status(500).send("❌ Lỗi khi thêm vé máy bay.");
+  }
+});
+
 module.exports = router;
