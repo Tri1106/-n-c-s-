@@ -289,8 +289,15 @@
           />
           <input
             type="text"
-            name="fromTo"
-            placeholder="Điểm đi - đến"
+            name="departurePoint"
+            placeholder="Điểm đi"
+            class="p-2 border rounded"
+            required
+          />
+          <input
+            type="text"
+            name="destinationPoint"
+            placeholder="Điểm đến"
             class="p-2 border rounded"
             required
           />
@@ -520,26 +527,35 @@
         .getElementById("flightForm")
         .addEventListener("submit", async (e) => {
           e.preventDefault();
-          const formData = new FormData(e.target);
-          try {
-            const tourID = document.getElementById("flightTourSelect").value;
-            if (!tourID) {
-              alert("Vui lòng chọn tour cho vé máy bay.");
-              return;
-            }
-            formData.append("tourID", tourID);
-            const res = await fetch("/provider/add-flight", {
-              method: "POST",
-              body: formData,
-            });
-            const result = await res.text();
-            alert(result);
-            e.target.reset();
-          } catch (err) {
-            console.error(err);
-            alert("❌ Lỗi khi thêm vé máy bay.");
+        const formData = new FormData(e.target);
+        try {
+          const tourID = document.getElementById("flightTourSelect").value;
+          if (!tourID) {
+            alert("Vui lòng chọn tour cho vé máy bay.");
+            return;
           }
-        });
+          formData.append("tourID", tourID);
+          // Thêm các trường departurePoint, destinationPoint, flightPrice, departTime vào formData
+          const departurePoint = e.target.querySelector('input[name="departurePoint"]').value;
+          const destinationPoint = e.target.querySelector('input[name="destinationPoint"]').value;
+          const flightPrice = e.target.querySelector('input[name="flightPrice"]').value;
+          const departTime = e.target.querySelector('input[name="departTime"]').value;
+          formData.append("departurePoint", departurePoint);
+          formData.append("destinationPoint", destinationPoint);
+          formData.append("flightPrice", flightPrice);
+          formData.append("departTime", departTime);
+          const res = await fetch("/provider/add-flight", {
+            method: "POST",
+            body: formData,
+          });
+          const result = await res.text();
+          alert(result);
+          e.target.reset();
+        } catch (err) {
+          console.error(err);
+          alert("❌ Lỗi khi thêm vé máy bay.");
+        }
+      });
     </script>
     <script>
       // Load tours for dropdowns
