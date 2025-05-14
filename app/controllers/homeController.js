@@ -123,13 +123,47 @@ router.get("/api/tours/:id", async (req, res) => {
   const tourId = req.params.id;
   try {
     const pool = await connect();
-    const result = await pool.request()
-      .input('tourId', tourId)
-      .query("SELECT TourID, ProviderID, TourName AS TenTour, Destination, Price AS Gia, Status, ImageURL AS HinhAnh, SoCho FROM Tours WHERE TourID = @tourId");
-    if (result.recordset.length === 0) {
+
+    // Lấy thông tin tour
+    const tourResult = await pool
+      .request()
+      .input("tourId", sql.VarChar(15), tourId)
+      .query(`
+        SELECT TourID, ProviderID, TourName AS TenTour, Destination, Price AS Gia, Status, ImageURL AS HinhAnh, SoCho
+        FROM Tours
+        WHERE TourID = @tourId
+      `);
+
+    if (tourResult.recordset.length === 0) {
       return res.status(404).json({ error: "Tour không tồn tại" });
     }
-    res.json(result.recordset[0]);
+    const tour = tourResult.recordset[0];
+
+    // Lấy danh sách khách sạn theo tourID
+    const hotelsResult = await pool
+      .request()
+      .input("tourId", tourId)
+      .query(`
+        SELECT HotelID, HotelName, Location, PricePerNight, ImageURL
+        FROM Hotels
+        WHERE TourID = @tourId
+      `);
+
+    // Lấy danh sách vé máy bay theo tourID
+    const flightsResult = await pool
+      .request()
+      .input("tourId", tourId)
+      .query(`
+        SELECT FlightID, Airline, DeparturePoint, DestinationPoint, Price, DepartureDate, ReturnDate
+        FROM Flights
+        WHERE TourID = @tourId
+      `);
+
+    res.json({
+      tour,
+      hotels: hotelsResult.recordset,
+      flights: flightsResult.recordset,
+    });
   } catch (err) {
     console.error("Lỗi khi lấy dữ liệu tour theo ID:", err);
     res.status(500).json({ error: "Lỗi server" });

@@ -180,10 +180,10 @@ router.post("/add-hotel", (req, res) => {
 
 router.post("/add-flight", upload.none(), async (req, res) => {
   try {
-    let { tourID, airline, departurePoint, destinationPoint, flightPrice, departTime } = req.body;
+    let { tourID, airline, departurePoint, destinationPoint, flightPrice, departTime, returnTime } = req.body;
 
     // Validate required fields
-    if (!tourID || !airline || !departurePoint || !destinationPoint || !flightPrice || !departTime) {
+    if (!tourID || !airline || !departurePoint || !destinationPoint || !flightPrice || !departTime || !returnTime) {
       return res.status(400).send("❌ Thiếu thông tin vé máy bay.");
     }
 
@@ -194,6 +194,7 @@ router.post("/add-flight", upload.none(), async (req, res) => {
     destinationPoint = Array.isArray(destinationPoint) ? destinationPoint[0] : destinationPoint;
     flightPrice = Array.isArray(flightPrice) ? flightPrice[0] : flightPrice;
     departTime = Array.isArray(departTime) ? departTime[0] : departTime;
+    returnTime = Array.isArray(returnTime) ? returnTime[0] : returnTime;
 
     // Trim strings
     tourID = String(tourID).trim();
@@ -202,6 +203,7 @@ router.post("/add-flight", upload.none(), async (req, res) => {
     destinationPoint = String(destinationPoint).trim();
     flightPrice = String(flightPrice).trim();
     departTime = String(departTime).trim();
+    returnTime = String(returnTime).trim();
 
     // Validate non-empty strings
     if (!tourID) return res.status(400).send("❌ tourID không hợp lệ.");
@@ -236,6 +238,33 @@ router.post("/add-flight", upload.none(), async (req, res) => {
       return res.status(400).send("❌ departTime không hợp lệ.");
     }
 
+    // Validate returnTime format and parse
+    const returnDateTimeParts = returnTime.split('T');
+    if (returnDateTimeParts.length !== 2) {
+      return res.status(400).send("❌ returnTime không hợp lệ.");
+    }
+    const returnDateParts = returnDateTimeParts[0].split('-');
+    const returnTimeParts = returnDateTimeParts[1].split(':');
+    if (returnDateParts.length !== 3 || (returnTimeParts.length !== 2 && returnTimeParts.length !== 3)) {
+      return res.status(400).send("❌ returnTime không hợp lệ.");
+    }
+    const returnYear = parseInt(returnDateParts[0], 10);
+    const returnMonth = parseInt(returnDateParts[1], 10);
+    const returnDay = parseInt(returnDateParts[2], 10);
+    const returnHour = parseInt(returnTimeParts[0], 10);
+    const returnMinute = parseInt(returnTimeParts[1], 10);
+    const returnSecond = returnTimeParts.length === 3 ? parseInt(returnTimeParts[2], 10) : 0;
+    if (
+      isNaN(returnYear) || isNaN(returnMonth) || isNaN(returnDay) ||
+      isNaN(returnHour) || isNaN(returnMinute) || isNaN(returnSecond)
+    ) {
+      return res.status(400).send("❌ returnTime không hợp lệ.");
+    }
+    const returnDateObj = new Date(returnYear, returnMonth - 1, returnDay, returnHour, returnMinute, returnSecond);
+    if (isNaN(returnDateObj.getTime())) {
+      return res.status(400).send("❌ returnTime không hợp lệ.");
+    }
+
     // Validate flightPrice as number
     const flightPriceNum = Number(flightPrice);
     if (isNaN(flightPriceNum)) {
@@ -254,15 +283,68 @@ router.post("/add-flight", upload.none(), async (req, res) => {
       .input("DestinationPoint", sql.NVarChar, destinationPoint)
       .input("Price", sql.Decimal(10, 2), flightPriceNum)
       .input("DepartureDate", sql.DateTime, departDateObj)
+      .input("ReturnDate", sql.DateTime, returnDateObj)
       .query(`
-        INSERT INTO Flights (FlightID, TourID, Airline, DeparturePoint, DestinationPoint, Price, DepartureDate)
-        VALUES (@FlightID, @TourID, @Airline, @DeparturePoint, @DestinationPoint, @Price, @DepartureDate)
+        INSERT INTO Flights (FlightID, TourID, Airline, DeparturePoint, DestinationPoint, Price, DepartureDate, ReturnDate)
+        VALUES (@FlightID, @TourID, @Airline, @DeparturePoint, @DestinationPoint, @Price, @DepartureDate, @ReturnDate)
       `);
 
     res.send("✅ Vé máy bay đã được thêm thành công!");
   } catch (err) {
     console.error("❌ Lỗi khi thêm vé máy bay:", err);
     res.status(500).send("❌ Lỗi khi thêm vé máy bay.");
+  }
+});
+
+// Route lấy chi tiết tour, khách sạn và vé máy bay theo tourID
+router.get("/tour-details/:tourID", async (req, res) => {
+  try {
+    const tourID = req.params.tourID;
+    const pool = await connect();
+
+    // Lấy thông tin tour
+    const tourResult = await pool
+      .request()
+      .input("TourID", sql.VarChar, tourID)
+      .query(`
+        SELECT TourID, TourName, Destination, Price, SoCho, ImageURL
+        FROM Tours
+        WHERE TourID = @TourID
+      `);
+
+    if (tourResult.recordset.length === 0) {
+      return res.status(404).send("Tour không tồn tại");
+    }
+    const tour = tourResult.recordset[0];
+
+    // Lấy danh sách khách sạn theo tourID
+    const hotelsResult = await pool
+      .request()
+      .input("TourID", sql.VarChar, tourID)
+      .query(`
+        SELECT HotelID, HotelName, Location, PricePerNight, ImageURL
+        FROM Hotels
+        WHERE TourID = @TourID
+      `);
+
+    // Lấy danh sách vé máy bay theo tourID
+    const flightsResult = await pool
+      .request()
+      .input("TourID", sql.VarChar, tourID)
+      .query(`
+        SELECT FlightID, Airline, DeparturePoint, DestinationPoint, Price, DepartureDate
+        FROM Flights
+        WHERE TourID = @TourID
+      `);
+
+    res.json({
+      tour,
+      hotels: hotelsResult.recordset,
+      flights: flightsResult.recordset,
+    });
+  } catch (err) {
+    console.error("Lỗi lấy chi tiết tour:", err);
+    res.status(500).send("Lỗi server khi lấy chi tiết tour");
   }
 });
 

@@ -268,7 +268,7 @@
 
         <!-- Quản lý vé máy bay -->
         <div id="manageFlights" class="sub-tab hidden">
-        <form
+          <form
           id="flightForm"
           class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6"
         >
@@ -312,6 +312,13 @@
             type="datetime-local"
             name="departTime"
             class="p-2 border rounded"
+            required
+          />
+          <input
+            type="datetime-local"
+            name="returnTime"
+            class="p-2 border rounded"
+            placeholder="Ngày giờ về"
             required
           />
           <button
@@ -399,6 +406,7 @@
               <td class="border px-4 py-2">
                 <button class="edit-tour-btn bg-yellow-500 hover:bg-yellow-600 text-white py-1 px-2 rounded mr-2" data-id="${tour.TourID}">Chỉnh sửa</button>
                 <button class="delete-tour-btn bg-red-500 hover:bg-red-600 text-white py-1 px-2 rounded" data-id="${tour.TourID}">Xóa</button>
+                <button class="view-tour-btn bg-green-500 hover:bg-green-600 text-white py-1 px-2 rounded mr-2" data-id="${tour.TourID}">Xem chi tiết</button>
               </td>
             `;
             tourList.appendChild(row);
@@ -408,6 +416,213 @@
         }
       }
       fetchTours();
+
+      // Thêm modal hiển thị chi tiết tour
+      const modalHTML = `
+        <div id="tourDetailModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+          <div class="bg-white p-6 rounded-lg w-3/4 max-h-[80vh] overflow-y-auto relative">
+            <h2 class="text-2xl font-bold mb-4">Chi tiết Tour</h2>
+            <button id="closeTourDetailModal" class="absolute top-4 right-4 text-gray-600 hover:text-gray-900 text-2xl font-bold">&times;</button>
+            <div id="tourDetailContent" class="space-y-4">
+              <!-- Nội dung chi tiết sẽ được chèn ở đây -->
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.insertAdjacentHTML("beforeend", modalHTML);
+
+      // Hàm format ngày giờ
+      function formatDateTime(dateStr) {
+        const date = new Date(dateStr);
+        if (isNaN(date)) return "";
+        return date.toLocaleString("vi-VN", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+      }
+
+      // Xử lý click nút xem chi tiết
+      document.addEventListener("click", async (e) => {
+        if (e.target.classList.contains("view-tour-btn")) {
+          const tourID = e.target.dataset.id;
+          try {
+            const res = await fetch(`/provider/tour-details/${tourID}`);
+            if (!res.ok) {
+              alert("Lỗi khi lấy chi tiết tour");
+              return;
+            }
+            const data = await res.json();
+            const { tour, hotels, flights } = data;
+
+            let html = `
+              <h3 class="text-xl font-semibold">Thông tin Tour</h3>
+              <p><strong>Tên tour:</strong> ${tour.TourName}</p>
+              <p><strong>Điểm đến:</strong> ${tour.Destination}</p>
+              <p><strong>Giá:</strong> ${tour.Price}</p>
+              <p><strong>Số chỗ:</strong> ${tour.SoCho}</p>
+              <img src="${tour.ImageURL}" alt="Ảnh tour" class="w-48 h-32 object-cover rounded mt-2" />
+              <hr class="my-4" />
+              <h3 class="text-xl font-semibold">Khách sạn</h3>
+            `;
+
+            if (hotels.length === 0) {
+              html += "<p>Chưa có khách sạn nào.</p>";
+            } else {
+              html += `<ul class="space-y-2">`;
+              hotels.forEach((hotel) => {
+                html += `
+                  <li class="border p-2 rounded flex gap-4 items-center">
+                    <img src="${hotel.ImageURL}" alt="Ảnh khách sạn" class="w-24 h-16 object-cover rounded" />
+                    <div>
+                      <p><strong>${hotel.HotelName}</strong></p>
+                      <p>Vị trí: ${hotel.Location}</p>
+                      <p>Giá/đêm: ${hotel.PricePerNight}</p>
+                    </div>
+                  </li>
+                `;
+              });
+              html += `</ul>`;
+            }
+
+            html += `<hr class="my-4" /><h3 class="text-xl font-semibold">Vé máy bay</h3>`;
+
+            if (flights.length === 0) {
+              html += "<p>Chưa có vé máy bay nào.</p>";
+            } else {
+              html += `<ul class="space-y-2">`;
+              flights.forEach((flight) => {
+                html += `
+                  <li class="border p-2 rounded">
+                    <p><strong>Hãng bay:</strong> ${flight.Airline}</p>
+                    <p><strong>Điểm đi:</strong> ${flight.DeparturePoint}</p>
+                    <p><strong>Điểm đến:</strong> ${flight.DestinationPoint}</p>
+                    <p><strong>Giá vé:</strong> ${flight.Price}</p>
+                    <p><strong>Ngày giờ khởi hành:</strong> ${formatDateTime(flight.DepartureDate)}</p>
+                  </li>
+                `;
+              });
+              html += `</ul>`;
+            }
+
+            document.getElementById("tourDetailContent").innerHTML = html;
+            document.getElementById("tourDetailModal").classList.remove("hidden");
+          } catch (err) {
+            console.error("Lỗi khi lấy chi tiết tour:", err);
+            alert("Lỗi khi lấy chi tiết tour");
+          }
+        }
+      });
+
+      // Thêm modal hiển thị chi tiết tour
+      if (!document.getElementById("tourDetailModal")) {
+        const modalHTML = `
+          <div id="tourDetailModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+            <div class="bg-white p-6 rounded-lg w-3/4 max-h-[80vh] overflow-y-auto relative">
+              <h2 class="text-2xl font-bold mb-4">Chi tiết Tour</h2>
+              <button id="closeTourDetailModal" class="absolute top-4 right-4 text-gray-600 hover:text-gray-900 text-2xl font-bold">&times;</button>
+              <div id="tourDetailContent" class="space-y-4">
+                <!-- Nội dung chi tiết sẽ được chèn ở đây -->
+              </div>
+            </div>
+          </div>
+        `;
+        document.body.insertAdjacentHTML("beforeend", modalHTML);
+      }
+
+      // Hàm format ngày giờ
+      function formatDateTime(dateStr) {
+        const date = new Date(dateStr);
+        if (isNaN(date)) return "";
+        return date.toLocaleString("vi-VN", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+      }
+
+      // Xử lý click nút xem chi tiết
+      document.addEventListener("click", async (e) => {
+        if (e.target.classList.contains("view-tour-btn")) {
+          const tourID = e.target.dataset.id;
+          try {
+            const res = await fetch(`/provider/tour-details/${tourID}`);
+            if (!res.ok) {
+              alert("Lỗi khi lấy chi tiết tour");
+              return;
+            }
+            const data = await res.json();
+            const { tour, hotels, flights } = data;
+
+            let html = `
+              <h3 class="text-xl font-semibold">Thông tin Tour</h3>
+              <p><strong>Tên tour:</strong> ${tour.TourName}</p>
+              <p><strong>Điểm đến:</strong> ${tour.Destination}</p>
+              <p><strong>Giá:</strong> ${tour.Price}</p>
+              <p><strong>Số chỗ:</strong> ${tour.SoCho}</p>
+              <img src="${tour.ImageURL}" alt="Ảnh tour" class="w-48 h-32 object-cover rounded mt-2" />
+              <hr class="my-4" />
+              <h3 class="text-xl font-semibold">Khách sạn</h3>
+            `;
+
+            if (hotels.length === 0) {
+              html += "<p>Chưa có khách sạn nào.</p>";
+            } else {
+              html += `<ul class="space-y-2">`;
+              hotels.forEach((hotel) => {
+                html += `
+                  <li class="border p-2 rounded flex gap-4 items-center">
+                    <img src="${hotel.ImageURL}" alt="Ảnh khách sạn" class="w-24 h-16 object-cover rounded" />
+                    <div>
+                      <p><strong>${hotel.HotelName}</strong></p>
+                      <p>Vị trí: ${hotel.Location}</p>
+                      <p>Giá/đêm: ${hotel.PricePerNight}</p>
+                    </div>
+                  </li>
+                `;
+              });
+              html += `</ul>`;
+            }
+
+            html += `<hr class="my-4" /><h3 class="text-xl font-semibold">Vé máy bay</h3>`;
+
+            if (flights.length === 0) {
+              html += "<p>Chưa có vé máy bay nào.</p>";
+            } else {
+              html += `<ul class="space-y-2">`;
+              flights.forEach((flight) => {
+                html += `
+                  <li class="border p-2 rounded">
+                    <p><strong>Hãng bay:</strong> ${flight.Airline}</p>
+                    <p><strong>Điểm đi:</strong> ${flight.DeparturePoint}</p>
+                    <p><strong>Điểm đến:</strong> ${flight.DestinationPoint}</p>
+                    <p><strong>Giá vé:</strong> ${flight.Price}</p>
+                    <p><strong>Ngày giờ khởi hành:</strong> ${formatDateTime(flight.DepartureDate)}</p>
+                  </li>
+                `;
+              });
+              html += `</ul>`;
+            }
+
+            document.getElementById("tourDetailContent").innerHTML = html;
+            document.getElementById("tourDetailModal").classList.remove("hidden");
+          } catch (err) {
+            console.error("Lỗi khi lấy chi tiết tour:", err);
+            alert("Lỗi khi lấy chi tiết tour");
+          }
+        }
+      });
+
+      // Đóng modal
+      document.addEventListener("click", (e) => {
+        if (e.target.id === "closeTourDetailModal" || e.target.id === "tourDetailModal") {
+          document.getElementById("tourDetailModal").classList.add("hidden");
+        }
+      });
 
       // Chỉnh sửa tour
       document.addEventListener("click", (e) => {
@@ -523,7 +738,7 @@
         });
 
       // Gửi vé máy bay
-      document
+        document
         .getElementById("flightForm")
         .addEventListener("submit", async (e) => {
           e.preventDefault();
@@ -535,15 +750,17 @@
             return;
           }
           formData.append("tourID", tourID);
-          // Thêm các trường departurePoint, destinationPoint, flightPrice, departTime vào formData
+          // Thêm các trường departurePoint, destinationPoint, flightPrice, departTime, returnTime vào formData
           const departurePoint = e.target.querySelector('input[name="departurePoint"]').value;
           const destinationPoint = e.target.querySelector('input[name="destinationPoint"]').value;
           const flightPrice = e.target.querySelector('input[name="flightPrice"]').value;
           const departTime = e.target.querySelector('input[name="departTime"]').value;
+          const returnTime = e.target.querySelector('input[name="returnTime"]').value;
           formData.append("departurePoint", departurePoint);
           formData.append("destinationPoint", destinationPoint);
           formData.append("flightPrice", flightPrice);
           formData.append("departTime", departTime);
+          formData.append("returnTime", returnTime);
           const res = await fetch("/provider/add-flight", {
             method: "POST",
             body: formData,
