@@ -367,19 +367,19 @@
 
             messageBox.classList.remove("hidden");
             if (res.ok) {
-              messageBox.innerText = "✅ Thêm tour thành công!";
+              messageBox.innerText = " Thêm tour thành công!";
               messageBox.className =
                 "text-green-600 font-semibold col-span-1 md:col-span-2";
               e.target.reset();
               fetchTours(); // Load lại danh sách
             } else {
-              messageBox.innerText = "❌ Thêm tour thất bại.";
+              messageBox.innerText = " Thêm tour thất bại.";
               messageBox.className =
                 "text-red-600 font-semibold col-span-1 md:col-span-2";
             }
           } catch (error) {
             console.error(error);
-            messageBox.innerText = "❌ Không thể kết nối server.";
+            messageBox.innerText = " Không thể kết nối server.";
             messageBox.className =
               "text-red-600 font-semibold col-span-1 md:col-span-2";
           }

@@ -127,4 +127,15 @@ router.post("/login", async (req, res) => {
   }
 });
 
+router.get('/logout', (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      console.error('Lỗi khi đăng xuất:', err);
+      return res.status(500).json({ success: false, message: 'Lỗi khi đăng xuất' });
+    }
+    res.clearCookie('connect.sid'); // Xóa cookie session
+    res.json({ success: true, message: 'Đăng xuất thành công' });
+  });
+});
+
 module.exports = router;

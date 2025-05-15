@@ -199,10 +199,10 @@
         <li><a href="#">Liên hệ</a></li>
       </ul>
       <div class="auth-buttons">
-        <a href="/account/login" class="login-btn">Đăng nhập</a>
-        <a href="/account/register" class="register-btn">Đăng ký</a>
+        <a href="/account/login" class="login-btn" id="login-btn">Đăng nhập</a>
+        <a href="/account/register" class="register-btn" id="register-btn">Đăng ký</a>
         <a
-          href="/account/logout"
+          href="#"
           class="logout-btn"
           id="logout-btn"
           style="display: none"
@@ -212,18 +212,47 @@
     </nav>
 
     <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        // Giả sử bạn kiểm tra trạng thái đăng nhập qua cookie hoặc session
-        const isLoggedIn = false; // Thay bằng điều kiện thực tế từ backend
+      document.addEventListener("DOMContentLoaded", async function () {
+        async function checkLoginStatus() {
+          try {
+            const res = await fetch("/api/check-login");
+            if (!res.ok) throw new Error("Lỗi khi kiểm tra đăng nhập");
+            const data = await res.json();
+            return data.loggedIn;
+          } catch (error) {
+            console.error(error);
+            return false;
+          }
+        }
+
+        const isLoggedIn = await checkLoginStatus();
 
         if (isLoggedIn) {
           document.getElementById("login-btn").style.display = "none";
           document.getElementById("register-btn").style.display = "none";
-          document.getElementById("logout-btn").style.display = "inline-block";
+          const logoutBtn = document.getElementById("logout-btn");
+          logoutBtn.style.display = "inline-block";
+
+          logoutBtn.addEventListener("click", async (e) => {
+            e.preventDefault();
+            try {
+              const res = await fetch("/account/logout");
+              if (!res.ok) throw new Error("Lỗi khi đăng xuất");
+              const data = await res.json();
+              if (data.success) {
+                alert("Đăng xuất thành công");
+                window.location.reload();
+              } else {
+                alert("Đăng xuất thất bại");
+              }
+            } catch (error) {
+              alert("Lỗi khi đăng xuất");
+              console.error(error);
+            }
+          });
         } else {
           document.getElementById("login-btn").style.display = "inline-block";
-          document.getElementById("register-btn").style.display =
-            "inline-block";
+          document.getElementById("register-btn").style.display = "inline-block";
           document.getElementById("logout-btn").style.display = "none";
         }
       });

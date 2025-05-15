@@ -6,16 +6,15 @@ const { connect, sql } = require("../../db");
 // Cấu hình nơi lưu ảnh
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "public/uploads"); // Đảm bảo ảnh được lưu trong thư mục 'public/uploads'
+    cb(null, "public/uploads"); 
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, uniqueSuffix + "-" + file.originalname); // Tên file duy nhất
+    cb(null, uniqueSuffix + "-" + file.originalname); 
   },
 });
 const upload = multer({ storage });
 
-// Route thêm tour
 // Route thêm tour
 router.post("/add-tour", upload.single("tourImage"), async (req, res) => {
   try {
@@ -23,7 +22,7 @@ router.post("/add-tour", upload.single("tourImage"), async (req, res) => {
     let providerID = req.session.user?.providerID;
 
     if (!providerID) {
-      return res.status(400).send("❌ providerID không có.");
+      return res.status(400).send(" providerID không có.");
     }
     if (providerID.length > 15) {
       providerID = providerID.substring(0, 15); // sửa 20 nếu cần
@@ -36,8 +35,8 @@ router.post("/add-tour", upload.single("tourImage"), async (req, res) => {
       .request()
       .input("TourID", sql.VarChar, tourID)
       .input("ProviderID", sql.VarChar, providerID)
-      .input("TourName", sql.VarChar, tourName)
-      .input("Destination", sql.NVarChar, destination)
+    .input("TourName", sql.NVarChar, tourName)
+    .input("Destination", sql.NVarChar, destination)
       .input("Price", sql.Decimal(10, 2), price)
       .input("SoCho", sql.Int, seats)
       .input("Status", sql.Bit, true)
@@ -46,10 +45,10 @@ router.post("/add-tour", upload.single("tourImage"), async (req, res) => {
             VALUES (@TourID, @ProviderID, @TourName, @Destination, @Price, @SoCho, @Status, @ImageURL)
           `);
 
-    res.send("✅ Tour đã được thêm thành công!");
+    res.send(" Tour đã được thêm thành công!");
   } catch (err) {
     console.error("❌ Lỗi khi thêm tour:", err);
-    res.status(500).send("❌ Lỗi khi thêm tour.");
+    res.status(500).send(" Lỗi khi thêm tour.");
     console.log(
       "ProviderID nhận được:",
       req.body.providerID || req.session.providerID
@@ -61,7 +60,7 @@ router.get("/tours", async (req, res) => {
   try {
     const providerID = req.session.user?.providerID; // đúng chỗ, vì bạn lưu providerID trong session user
     if (!providerID) {
-      return res.status(400).send("❌ Chưa đăng nhập.");
+      return res.status(400).send(" Chưa đăng nhập.");
     }
 
     const pool = await connect(); // <-- dùng connect để lấy pool
@@ -89,8 +88,8 @@ router.put("/edit-tour/:tourID", async (req, res) => {
     await pool
       .request()
       .input("TourID", sql.VarChar, tourID)
-      .input("TourName", sql.VarChar, tourName)
-      .input("Destination", sql.NVarChar, destination)
+    .input("TourName", sql.NVarChar, tourName)
+    .input("Destination", sql.NVarChar, destination)
       .input("Price", sql.Decimal(10, 2), price)
       .input("SoCho", sql.Int, seats)
       .query(`
@@ -99,10 +98,10 @@ router.put("/edit-tour/:tourID", async (req, res) => {
         WHERE TourID = @TourID
       `);
 
-    res.send("✅ Tour đã được cập nhật thành công!");
+    res.send(" Tour đã được cập nhật thành công!");
   } catch (err) {
-    console.error("❌ Lỗi khi cập nhật tour:", err);
-    res.status(500).send("❌ Lỗi khi cập nhật tour.");
+    console.error(" Lỗi khi cập nhật tour:", err);
+    res.status(500).send(" Lỗi khi cập nhật tour.");
   }
 });
 
@@ -118,10 +117,10 @@ router.delete("/delete-tour/:tourID", async (req, res) => {
         DELETE FROM Tours WHERE TourID = @TourID
       `);
 
-    res.send("✅ Tour đã được xóa thành công!");
+    res.send(" Tour đã được xóa thành công!");
   } catch (err) {
-    console.error("❌ Lỗi khi xóa tour:", err);
-    res.status(500).send("❌ Lỗi khi xóa tour.");
+    console.error(" Lỗi khi xóa tour:", err);
+    res.status(500).send(" Lỗi khi xóa tour.");
   }
 });
 
@@ -130,7 +129,7 @@ router.post("/add-hotel", (req, res) => {
   upload.single("hotelImage")(req, res, async (err) => {
     if (err) {
       console.error("❌ Lỗi multer khi thêm khách sạn:", err);
-      return res.status(500).send("❌ Lỗi khi tải ảnh khách sạn.");
+      return res.status(500).send(" Lỗi khi tải ảnh khách sạn.");
     }
 
     try {
@@ -138,7 +137,7 @@ router.post("/add-hotel", (req, res) => {
       const imagePath = req.file ? "/uploads/" + req.file.filename : null;
 
       if (!tourID || !hotelName || !location || !pricePerNight) {
-        return res.status(400).send("❌ Thiếu thông tin khách sạn.");
+        return res.status(400).send(" Thiếu thông tin khách sạn.");
       }
 
       if (Array.isArray(tourID)) {
@@ -149,7 +148,7 @@ router.post("/add-hotel", (req, res) => {
       }
       tourID = tourID.trim();
       if (tourID.length === 0) {
-        return res.status(400).send("❌ tourID không hợp lệ.");
+        return res.status(400).send(" tourID không hợp lệ.");
       }
 
       console.log("Received tourID:", tourID);
@@ -170,10 +169,10 @@ router.post("/add-hotel", (req, res) => {
           VALUES (@HotelID, @TourID, @HotelName, @Location, @PricePerNight, @ImageURL)
         `);
 
-      res.send("✅ Khách sạn đã được thêm thành công!");
+      res.send(" Khách sạn đã được thêm thành công!");
     } catch (err) {
-      console.error("❌ Lỗi khi thêm khách sạn:", err);
-      res.status(500).send("❌ Lỗi khi thêm khách sạn.");
+      console.error(" Lỗi khi thêm khách sạn:", err);
+      res.status(500).send(" Lỗi khi thêm khách sạn.");
     }
   });
 });
@@ -184,7 +183,7 @@ router.post("/add-flight", upload.none(), async (req, res) => {
 
     // Validate required fields
     if (!tourID || !airline || !departurePoint || !destinationPoint || !flightPrice || !departTime || !returnTime) {
-      return res.status(400).send("❌ Thiếu thông tin vé máy bay.");
+      return res.status(400).send(" Thiếu thông tin vé máy bay.");
     }
 
     // Normalize inputs if arrays
@@ -206,20 +205,20 @@ router.post("/add-flight", upload.none(), async (req, res) => {
     returnTime = String(returnTime).trim();
 
     // Validate non-empty strings
-    if (!tourID) return res.status(400).send("❌ tourID không hợp lệ.");
-    if (!airline) return res.status(400).send("❌ airline không hợp lệ.");
-    if (!departurePoint) return res.status(400).send("❌ departurePoint không hợp lệ.");
-    if (!destinationPoint) return res.status(400).send("❌ destinationPoint không hợp lệ.");
+    if (!tourID) return res.status(400).send(" tourID không hợp lệ.");
+    if (!airline) return res.status(400).send(" airline không hợp lệ.");
+    if (!departurePoint) return res.status(400).send(" departurePoint không hợp lệ.");
+    if (!destinationPoint) return res.status(400).send(" destinationPoint không hợp lệ.");
 
     // Validate departTime format and parse
     const dateTimeParts = departTime.split('T');
     if (dateTimeParts.length !== 2) {
-      return res.status(400).send("❌ departTime không hợp lệ.");
+      return res.status(400).send(" departTime không hợp lệ.");
     }
     const dateParts = dateTimeParts[0].split('-');
     const timeParts = dateTimeParts[1].split(':');
     if (dateParts.length !== 3 || (timeParts.length !== 2 && timeParts.length !== 3)) {
-      return res.status(400).send("❌ departTime không hợp lệ.");
+      return res.status(400).send(" departTime không hợp lệ.");
     }
     const year = parseInt(dateParts[0], 10);
     const month = parseInt(dateParts[1], 10);
@@ -231,22 +230,22 @@ router.post("/add-flight", upload.none(), async (req, res) => {
       isNaN(year) || isNaN(month) || isNaN(day) ||
       isNaN(hour) || isNaN(minute) || isNaN(second)
     ) {
-      return res.status(400).send("❌ departTime không hợp lệ.");
+      return res.status(400).send(" departTime không hợp lệ.");
     }
     const departDateObj = new Date(year, month - 1, day, hour, minute, second);
     if (isNaN(departDateObj.getTime())) {
-      return res.status(400).send("❌ departTime không hợp lệ.");
+      return res.status(400).send(" departTime không hợp lệ.");
     }
 
     // Validate returnTime format and parse
     const returnDateTimeParts = returnTime.split('T');
     if (returnDateTimeParts.length !== 2) {
-      return res.status(400).send("❌ returnTime không hợp lệ.");
+      return res.status(400).send(" returnTime không hợp lệ.");
     }
     const returnDateParts = returnDateTimeParts[0].split('-');
     const returnTimeParts = returnDateTimeParts[1].split(':');
     if (returnDateParts.length !== 3 || (returnTimeParts.length !== 2 && returnTimeParts.length !== 3)) {
-      return res.status(400).send("❌ returnTime không hợp lệ.");
+      return res.status(400).send(" returnTime không hợp lệ.");
     }
     const returnYear = parseInt(returnDateParts[0], 10);
     const returnMonth = parseInt(returnDateParts[1], 10);
@@ -258,17 +257,17 @@ router.post("/add-flight", upload.none(), async (req, res) => {
       isNaN(returnYear) || isNaN(returnMonth) || isNaN(returnDay) ||
       isNaN(returnHour) || isNaN(returnMinute) || isNaN(returnSecond)
     ) {
-      return res.status(400).send("❌ returnTime không hợp lệ.");
+      return res.status(400).send(" returnTime không hợp lệ.");
     }
     const returnDateObj = new Date(returnYear, returnMonth - 1, returnDay, returnHour, returnMinute, returnSecond);
     if (isNaN(returnDateObj.getTime())) {
-      return res.status(400).send("❌ returnTime không hợp lệ.");
+      return res.status(400).send(" returnTime không hợp lệ.");
     }
 
     // Validate flightPrice as number
     const flightPriceNum = Number(flightPrice);
     if (isNaN(flightPriceNum)) {
-      return res.status(400).send("❌ flightPrice không hợp lệ.");
+      return res.status(400).send(" flightPrice không hợp lệ.");
     }
 
     const pool = await connect();
@@ -289,10 +288,10 @@ router.post("/add-flight", upload.none(), async (req, res) => {
         VALUES (@FlightID, @TourID, @Airline, @DeparturePoint, @DestinationPoint, @Price, @DepartureDate, @ReturnDate)
       `);
 
-    res.send("✅ Vé máy bay đã được thêm thành công!");
+    res.send(" Vé máy bay đã được thêm thành công!");
   } catch (err) {
-    console.error("❌ Lỗi khi thêm vé máy bay:", err);
-    res.status(500).send("❌ Lỗi khi thêm vé máy bay.");
+    console.error(" Lỗi khi thêm vé máy bay:", err);
+    res.status(500).send(" Lỗi khi thêm vé máy bay.");
   }
 });
 

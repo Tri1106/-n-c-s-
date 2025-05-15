@@ -142,33 +142,35 @@
       <button>💬 Liên hệ tư vấn</button>
     </div>
 
-    <!-- Modal đặt tour -->
-    <div id="booking-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); justify-content:center; align-items:center;">
-      <div style="background:#fff; padding:20px; border-radius:8px; width:400px; max-height:80vh; overflow-y:auto; position:relative;">
-        <h2>Đặt tour</h2>
-        <button id="close-booking-modal" style="position:absolute; top:10px; right:10px; font-size:18px; cursor:pointer;">&times;</button>
-        <div id="booking-info">
-          <h3>Thông tin khách sạn</h3>
-          <ul id="booking-hotels-list" style="list-style:none; padding-left:0;"></ul>
-          <h3>Thông tin vé máy bay</h3>
-          <ul id="booking-flights-list" style="list-style:none; padding-left:0;"></ul>
-          <h3>Thông tin khách hàng</h3>
-          <form id="booking-form">
-            <label for="customer-name">Tên khách hàng:</label><br />
-            <input type="text" id="customer-name" name="customerName" required /><br />
-            <label for="customer-email">Email:</label><br />
-            <input type="email" id="customer-email" name="customerEmail" required /><br />
-            <label for="customer-phone">Số điện thoại:</label><br />
-            <input type="tel" id="customer-phone" name="customerPhone" required /><br />
-            <button type="submit" style="margin-top:10px;">Xác nhận đặt tour</button>
-          </form>
-          <div id="booking-message" style="margin-top:10px; color:green;"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
+<script>
+  document.getElementById('book-now-btn').addEventListener('click', async () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const tourId = urlParams.get('tourId');
+    if (!tourId) {
+      alert('Không tìm thấy mã tour để đặt.');
+      return;
+    }
+    try {
+      const res = await fetch('/api/check-login');
+      const data = await res.json();
+      if (!data.loggedIn) {
+      alert('Bạn chưa đăng nhập. Vui lòng đăng nhập để tiếp tục.');
+      if (confirm('Bạn cần đăng nhập tài khoản khách hàng để đặt tour.')) {
+        window.location.href = '/account/login';
+      }
+      return;
+      } else if (data.role !== 'customer') {
+        alert('Bạn cần đăng nhập tài khoản khách hàng để đặt tour.');
+      } else {
+        window.location.href = `/booking?tourId=${encodeURIComponent(tourId)}`;
+      }
+    } catch (error) {
+      alert('Lỗi kiểm tra đăng nhập. Vui lòng thử lại.');
+      console.error(error);
+    }
+  });
+</script>
+    
 <script>
   function getQueryParam(param) {
     const urlParams = new URLSearchParams(window.location.search);
@@ -228,46 +230,7 @@
         <li>📅 Ngày khởi hành: ${departureDateText}</li>
         <li>⏱️ Thời gian: ${durationText}</li>
       `;
-
-      // You can add event listener for booking button here
-      document.getElementById('book-now-btn').onclick = () => {
-        // Hiển thị modal đặt tour
-        const bookingModal = document.getElementById('booking-modal');
-        bookingModal.style.display = 'flex';
-
-        // Đóng modal
-        document.getElementById('close-booking-modal').onclick = () => {
-          bookingModal.style.display = 'none';
-          document.getElementById('booking-message').textContent = '';
-          document.getElementById('booking-form').reset();
-        };
-
-        // Hiển thị thông tin khách sạn trong modal
-        const bookingHotelsList = document.getElementById('booking-hotels-list');
-        bookingHotelsList.innerHTML = '';
-        if (window.tourData && window.tourData.hotels && window.tourData.hotels.length > 0) {
-          window.tourData.hotels.forEach(hotel => {
-            const li = document.createElement('li');
-            li.textContent = `${hotel.HotelName} - ${hotel.Location} - Giá: ${hotel.PricePerNight.toLocaleString()} VNĐ`;
-            bookingHotelsList.appendChild(li);
-          });
-        } else {
-          bookingHotelsList.textContent = 'Không có thông tin khách sạn.';
-        }
-
-        // Hiển thị thông tin vé máy bay trong modal
-        const bookingFlightsList = document.getElementById('booking-flights-list');
-        bookingFlightsList.innerHTML = '';
-        if (window.tourData && window.tourData.flights && window.tourData.flights.length > 0) {
-          window.tourData.flights.forEach(flight => {
-            const li = document.createElement('li');
-            li.textContent = `✈️ ${flight.Airline} - ${flight.DeparturePoint} → ${flight.DestinationPoint} - Giá: ${Number(flight.Price).toLocaleString()} VNĐ - Ngày đi: ${new Date(flight.DepartureDate).toLocaleDateString('vi-VN')} - Ngày về: ${new Date(flight.ReturnDate).toLocaleDateString('vi-VN')}`;
-            bookingFlightsList.appendChild(li);
-          });
-        } else {
-          bookingFlightsList.textContent = 'Không có thông tin vé máy bay.';
-        }
-      };
+    
 
     } catch (error) {
       alert('Lỗi khi tải chi tiết tour.');

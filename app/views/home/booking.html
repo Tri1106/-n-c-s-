@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Đặt Tour</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        color: #333;
+      }
+      .container {
+        max-width: 600px;
+        margin: auto;
+      }
+      h1 {
+        color: #e53935;
+      }
+      .message {
+        margin-top: 20px;
+        color: red;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Trang Đặt Tour</h1>
+      <div id="tour-info"></div>
+      <h2>Khách sạn</h2>
+      <div id="hotels" class="grid"></div>
+      <h2>Vé máy bay</h2>
+      <div id="flights" class="grid"></div>
+
+      <div id="booking-section" style="margin-top: 2rem;">
+        <label for="seatCount">Số chỗ đặt:</label>
+        <input type="number" id="seatCount" min="1" value="1" style="width: 60px; margin-left: 10px;" />
+        <span id="remainingSeats" style="margin-left: 20px; font-weight: bold;"></span>
+        <br />
+        <button id="payButton" style="margin-top: 10px; display: none;">Thanh toán</button>
+      </div>
+
+      <div class="message" id="message"></div>
+    </div>
+
+    <style>
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        margin: 20px;
+        color: #222;
+        background-color: #f9f9f9;
+      }
+      .container {
+        max-width: 1000px;
+        margin: auto;
+        background: #fff;
+        padding: 20px 30px;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      }
+      h1 {
+        color: #d32f2f;
+        margin-bottom: 1.5rem;
+        font-weight: 700;
+        font-size: 2.5rem;
+        text-align: center;
+      }
+      h2 {
+        color: #1565c0;
+        margin-top: 2.5rem;
+        margin-bottom: 1rem;
+        font-weight: 600;
+        border-bottom: 2px solid #1565c0;
+        padding-bottom: 5px;
+      }
+      .message {
+        margin-top: 20px;
+        color: #d32f2f;
+        font-weight: 700;
+        font-size: 1.1rem;
+        text-align: center;
+      }
+      .grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        justify-content: center;
+      }
+      .card {
+        border: 1px solid #ddd;
+        border-radius: 12px;
+        padding: 1rem;
+        width: 30%;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        background-color: #fff;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+      .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+      }
+      .card img {
+        width: 100%;
+        height: 140px;
+        object-fit: cover;
+        border-radius: 10px;
+        margin-bottom: 0.7rem;
+        transition: transform 0.3s ease;
+      }
+      .card img:hover {
+        transform: scale(1.05);
+      }
+      .card h3 {
+        margin: 0.5rem 0;
+        color: #1565c0;
+        font-weight: 600;
+        font-size: 1.2rem;
+      }
+      .card p {
+        margin: 0.3rem 0;
+        font-size: 0.95rem;
+        color: #555;
+      }
+      #booking-section {
+        margin-top: 2.5rem;
+        text-align: center;
+      }
+      #booking-section label {
+        font-weight: 600;
+        font-size: 1.1rem;
+        margin-right: 10px;
+      }
+      #seatCount {
+        width: 80px;
+        padding: 6px 10px;
+        font-size: 1rem;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        text-align: center;
+        transition: border-color 0.3s ease;
+      }
+      #seatCount:focus {
+        border-color: #1565c0;
+        outline: none;
+      }
+      #remainingSeats {
+        margin-left: 20px;
+        font-weight: 700;
+        font-size: 1rem;
+        color: #2e7d32;
+      }
+      #payButton {
+        margin-top: 15px;
+        padding: 10px 25px;
+        font-size: 1.1rem;
+        background-color: #1976d2;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+      #payButton:hover {
+        background-color: #0d47a1;
+      }
+    </style>
+
+    <script>
+      async function checkLogin() {
+        try {
+          const res = await fetch("/api/check-login");
+          if (!res.ok) throw new Error("Lỗi khi kiểm tra đăng nhập");
+          const data = await res.json();
+          return data.loggedIn;
+        } catch (error) {
+          console.error(error);
+          return false;
+        }
+      }
+
+      function getTourIdFromUrl() {
+        const params = new URLSearchParams(window.location.search);
+        return params.get("tourId");
+      }
+
+      async function fetchTourData(tourId) {
+        try {
+          const res = await fetch(`/api/tours/${tourId}`);
+          if (!res.ok) throw new Error("Lỗi khi lấy dữ liệu tour");
+          return await res.json();
+        } catch (error) {
+          console.error(error);
+          return null;
+        }
+      }
+
+      function renderTourInfo(tour) {
+        const container = document.getElementById("tour-info");
+        container.innerHTML = `
+          <h2>${tour.TenTour}</h2>
+          <p><strong>Điểm đến:</strong> ${tour.Destination}</p>
+          <p><strong>Giá:</strong> ${tour.Gia.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} VNĐ</p>
+          <p><strong>Số chỗ:</strong> ${tour.SoCho}</p>
+          <img src="${tour.HinhAnh}" alt="${tour.TenTour}" style="width:75%; max-height:300px; object-fit:cover; border-radius:8px; margin-top:20px;" />
+        `;
+      }
+
+      function renderHotels(hotels) {
+        const container = document.getElementById("hotels");
+        if (hotels.length === 0) {
+          container.innerHTML = "<p>Không có khách sạn nào.</p>";
+          return;
+        }
+        container.innerHTML = hotels
+          .map(
+            (hotel) => `
+          <div class="card">
+            <img src="${hotel.ImageURL}" alt="${hotel.HotelName}" />
+            <h3>${hotel.HotelName}</h3>
+            <p><strong>Vị trí:</strong> ${hotel.Location}</p>
+            <p><strong>Giá mỗi đêm:</strong> ${hotel.PricePerNight.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} VND</p>
+          </div>
+        `
+          )
+          .join("");
+      }
+
+      function renderFlights(flights) {
+        const container = document.getElementById("flights");
+        if (flights.length === 0) {
+          container.innerHTML = "<p>Không có vé máy bay nào.</p>";
+          return;
+        }
+        container.innerHTML = flights
+          .map(
+            (flight) => `
+          <div class="card">
+            <h3>${flight.Airline}</h3>
+            <p><strong>Điểm đi:</strong> ${flight.DeparturePoint}</p>
+            <p><strong>Điểm đến:</strong> ${flight.DestinationPoint}</p>
+            <p><strong>Giá:</strong> ${flight.Price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} VND</p>
+            <p><strong>Ngày đi:</strong> ${new Date(flight.DepartureDate).toLocaleDateString()}</p>
+            <p><strong>Ngày về:</strong> ${new Date(flight.ReturnDate).toLocaleDateString()}</p>
+          </div>
+        `
+          )
+          .join("");
+      }
+
+      async function init() {
+        const isLoggedIn = await checkLogin();
+        if (!isLoggedIn) {
+          document.getElementById("message").textContent =
+            "Bạn chưa đăng nhập. Vui lòng đăng nhập để tiếp tục.";
+          setTimeout(() => {
+            window.location.href = "/account/login";
+          }, 2000);
+          return;
+        }
+
+        const tourId = getTourIdFromUrl();
+        if (!tourId) {
+          document.getElementById("message").textContent =
+            "Không tìm thấy thông tin tour.";
+          return;
+        }
+
+        const data = await fetchTourData(tourId);
+        if (!data) {
+          document.getElementById("message").textContent =
+            "Lỗi khi tải dữ liệu tour.";
+          return;
+        }
+
+        renderTourInfo(data.tour);
+        renderHotels(data.hotels);
+        renderFlights(data.flights);
+      }
+
+      init();
+
+      function updateRemainingSeats(totalSeats, bookedSeats) {
+        const seatInput = document.getElementById("seatCount");
+        const remainingSeatsSpan = document.getElementById("remainingSeats");
+        const payButton = document.getElementById("payButton");
+
+        function update() {
+          const requestedSeats = parseInt(seatInput.value, 10);
+          if (isNaN(requestedSeats) || requestedSeats < 1) {
+            remainingSeatsSpan.textContent = `Số chỗ đặt không hợp lệ.`;
+            payButton.style.display = "none";
+            return;
+          }
+          const seatsLeft = totalSeats - requestedSeats;
+          if (seatsLeft < 0) {
+            remainingSeatsSpan.textContent = `Chỉ còn ${totalSeats} chỗ trống. Vui lòng nhập số chỗ nhỏ hơn hoặc bằng.`;
+            payButton.style.display = "none";
+          } else {
+            remainingSeatsSpan.textContent = `Số chỗ còn lại sau khi đặt: ${seatsLeft}`;
+            payButton.style.display = "inline-block";
+          }
+        }
+
+        seatInput.addEventListener("input", update);
+        update();
+      }
+
+      // Sau khi renderTourInfo được gọi, gọi updateRemainingSeats với số chỗ tour
+      const originalRenderTourInfo = renderTourInfo;
+      renderTourInfo = function (tour) {
+        originalRenderTourInfo(tour);
+        updateRemainingSeats(tour.SoCho);
+      };
+
+      // Xử lý sự kiện nút thanh toán
+      document.getElementById("payButton").addEventListener("click", () => {
+        const seatCount = parseInt(document.getElementById("seatCount").value, 10);
+        alert(`Bạn đã đặt ${seatCount} chỗ. Tiến hành thanh toán.`);
+        // TODO: Thêm xử lý thanh toán thực tế
+      });
+    </script>
+  </body>
+</html>
