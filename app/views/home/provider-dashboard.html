@@ -85,6 +85,42 @@
             required
           />
           <input
+            type="text"
+            name="diemThamQuan"
+            placeholder="Điểm tham quan"
+            class="p-2 border rounded"
+          />
+          <input
+            type="text"
+            name="amThuc"
+            placeholder="Ẩm thực"
+            class="p-2 border rounded"
+          />
+          <input
+            type="text"
+            name="doiTuongThichHop"
+            placeholder="Đối tượng thích hợp"
+            class="p-2 border rounded"
+          />
+          <input
+            type="text"
+            name="thoiGianLyTuong"
+            placeholder="Thời gian lý tưởng"
+            class="p-2 border rounded"
+          />
+          <input
+            type="text"
+            name="phuongTien"
+            placeholder="Phương tiện"
+            class="p-2 border rounded"
+          />
+          <input
+            type="text"
+            name="khuyenMai"
+            placeholder="Khuyến mãi"
+            class="p-2 border rounded"
+          />
+          <input
             type="file"
             name="tourImage"
             accept="image/*"
@@ -134,50 +170,86 @@
         <div class="bg-white p-6 rounded-lg w-[400px]">
           <h2 class="text-xl font-bold mb-4">✏️ Chỉnh sửa Tour</h2>
           <form id="editTourForm" class="flex flex-col gap-4">
-            <input
-              type="text"
-              id="editTourName"
-              placeholder="Tên tour"
-              class="p-2 border rounded"
-              required
-            />
-            <input
-              type="text"
-              id="editDestination"
-              placeholder="Điểm đến"
-              class="p-2 border rounded"
-              required
-            />
-            <input
-              type="number"
-              id="editPrice"
-              placeholder="Giá"
-              class="p-2 border rounded"
-              required
-            />
-            <input
-              type="number"
-              id="editSeats"
-              placeholder="Số chỗ"
-              class="p-2 border rounded"
-              required
-            />
-            <div class="flex justify-end gap-2">
-              <button
-                type="button"
-                id="cancelEdit"
-                class="bg-gray-400 hover:bg-gray-500 text-white py-1 px-4 rounded"
-              >
-                Hủy
-              </button>
-              <button
-                type="submit"
-                class="bg-blue-500 hover:bg-blue-600 text-white py-1 px-4 rounded"
-              >
-                Lưu
-              </button>
-            </div>
-          </form>
+          <input
+            type="text"
+            id="editTourName"
+            placeholder="Tên tour"
+            class="p-2 border rounded"
+            required
+          />
+          <input
+            type="text"
+            id="editDestination"
+            placeholder="Điểm đến"
+            class="p-2 border rounded"
+            required
+          />
+          <input
+            type="number"
+            id="editPrice"
+            placeholder="Giá"
+            class="p-2 border rounded"
+            required
+          />
+          <input
+            type="number"
+            id="editSeats"
+            placeholder="Số chỗ"
+            class="p-2 border rounded"
+            required
+          />
+          <input
+            type="text"
+            id="editDiemThamQuan"
+            placeholder="Điểm tham quan"
+            class="p-2 border rounded"
+          />
+          <input
+            type="text"
+            id="editAmThuc"
+            placeholder="Ẩm thực"
+            class="p-2 border rounded"
+          />
+          <input
+            type="text"
+            id="editDoiTuongThichHop"
+            placeholder="Đối tượng thích hợp"
+            class="p-2 border rounded"
+          />
+          <input
+            type="text"
+            id="editThoiGianLyTuong"
+            placeholder="Thời gian lý tưởng"
+            class="p-2 border rounded"
+          />
+          <input
+            type="text"
+            id="editPhuongTien"
+            placeholder="Phương tiện"
+            class="p-2 border rounded"
+          />
+          <input
+            type="text"
+            id="editKhuyenMai"
+            placeholder="Khuyến mãi"
+            class="p-2 border rounded"
+          />
+          <div class="flex justify-end gap-2">
+            <button
+              type="button"
+              id="cancelEdit"
+              class="bg-gray-400 hover:bg-gray-500 text-white py-1 px-4 rounded"
+            >
+              Hủy
+            </button>
+            <button
+              type="submit"
+              class="bg-blue-500 hover:bg-blue-600 text-white py-1 px-4 rounded"
+            >
+              Lưu
+            </button>
+          </div>
+        </form>
         </div>
       </div>
 
@@ -637,6 +709,14 @@
             row.children[2].innerText;
           document.getElementById("editSeats").value =
             row.children[3].innerText;
+          // TODO: Need to fetch and fill the new fields for editing
+          // For now, clear the new fields
+          document.getElementById("editDiemThamQuan").value = "";
+          document.getElementById("editAmThuc").value = "";
+          document.getElementById("editDoiTuongThichHop").value = "";
+          document.getElementById("editThoiGianLyTuong").value = "";
+          document.getElementById("editPhuongTien").value = "";
+          document.getElementById("editKhuyenMai").value = "";
           document.getElementById("editTourModal").classList.remove("hidden");
         }
       });
@@ -658,6 +738,12 @@
                 destination: document.getElementById("editDestination").value,
                 price: document.getElementById("editPrice").value,
                 seats: document.getElementById("editSeats").value,
+                diemThamQuan: document.getElementById("editDiemThamQuan").value,
+                amThuc: document.getElementById("editAmThuc").value,
+                doiTuongThichHop: document.getElementById("editDoiTuongThichHop").value,
+                thoiGianLyTuong: document.getElementById("editThoiGianLyTuong").value,
+                phuongTien: document.getElementById("editPhuongTien").value,
+                khuyenMai: document.getElementById("editKhuyenMai").value,
               }),
             });
 

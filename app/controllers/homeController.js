@@ -154,8 +154,9 @@ router.get("/api/tours/:id", async (req, res) => {
     // Lấy thông tin tour
     const tourResult = await pool
       .request()
-      .input("tourId", sql.VarChar(15), tourId).query(`
-        SELECT TourID, ProviderID, TourName AS TenTour, Destination, Price AS Gia, Status, ImageURL AS HinhAnh, SoCho
+    .input("tourId", sql.VarChar(15), tourId).query(`
+        SELECT TourID, ProviderID, TourName AS TenTour, Destination, Price AS Gia, Status, ImageURL AS HinhAnh, SoCho,
+          DiemThamQuan, AmThuc, DoiTuongThichHop, ThoiGianLyTuong, PhuongTien, KhuyenMai
         FROM Tours
         WHERE TourID = @tourId
       `);

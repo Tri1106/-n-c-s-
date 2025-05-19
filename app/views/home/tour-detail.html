@@ -141,6 +141,23 @@
       <button>📞 Gọi miễn phí</button>
       <button>💬 Liên hệ tư vấn</button>
     </div>
+  </div>
+</div>
+
+<!-- Additional Info Section -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+<section id="additional-info" style="margin-top: 40px;">
+  <h2 style="text-align: center; font-weight: bold; margin-bottom: 20px;">THÔNG TIN THÊM VỀ CHUYẾN ĐI</h2>
+  <div id="additional-info-content" style="display: flex; justify-content: space-around; flex-wrap: wrap; gap: 20px;">
+    <!-- Dynamic additional info content will be inserted here -->
+  </div>
+</section>
+
+<!-- It is recommended to replace /path/to/icon-*.svg with actual icon paths or use icon fonts -->
+
+<script>
+  // Existing book-now-btn event listener code here
+</script>
 
 <script>
   document.getElementById('book-now-btn').addEventListener('click', async () => {
@@ -229,6 +246,35 @@
         <li>👥 Số chỗ còn: ${tour.tour.SoCho}</li>
         <li>📅 Ngày khởi hành: ${departureDateText}</li>
         <li>⏱️ Thời gian: ${durationText}</li>
+      `;
+
+      // Hiển thị thông tin thêm về chuyến đi
+      const additionalInfoContent = document.getElementById('additional-info-content');
+      additionalInfoContent.innerHTML = `
+        <div style="flex: 1 1 200px; border: 1px solid #ddd; border-radius: 8px; padding: 15px; background-color: #fff;">
+          <h3><i class="fa-solid fa-map-location-dot"></i> Điểm Tham Quan</h3>
+          <p>${tour.tour.DiemThamQuan || 'Chưa cập nhật'}</p>
+        </div>
+        <div style="flex: 1 1 200px; border: 1px solid #ddd; border-radius: 8px; padding: 15px; background-color: #fff;">
+          <h3><i class="fa-solid fa-utensils"></i> Ẩm Thực</h3>
+          <p>${tour.tour.AmThuc || 'Chưa cập nhật'}</p>
+        </div>
+        <div style="flex: 1 1 200px; border: 1px solid #ddd; border-radius: 8px; padding: 15px; background-color: #fff;">
+          <h3><i class="fa-solid fa-users"></i> Đối Tượng Thích Hợp</h3>
+          <p>${tour.tour.DoiTuongThichHop || 'Chưa cập nhật'}</p>
+        </div>
+        <div style="flex: 1 1 200px; border: 1px solid #ddd; border-radius: 8px; padding: 15px; background-color: #fff;">
+          <h3><i class="fa-solid fa-clock"></i> Thời Gian Lý Tưởng</h3>
+          <p>${tour.tour.ThoiGianLyTuong || 'Chưa cập nhật'}</p>
+        </div>
+        <div style="flex: 1 1 200px; border: 1px solid #ddd; border-radius: 8px; padding: 15px; background-color: #fff;">
+          <h3><i class="fa-solid fa-bus"></i> Phương Tiện</h3>
+          <p>${tour.tour.PhuongTien || 'Chưa cập nhật'}</p>
+        </div>
+        <div style="flex: 1 1 200px; border: 1px solid #ddd; border-radius: 8px; padding: 15px; background-color: #fff;">
+          <h3><i class="fa-solid fa-tag"></i> Khuyến Mãi</h3>
+          <p>${tour.tour.KhuyenMai || 'Chưa cập nhật'}</p>
+        </div>
       `;
     
 
