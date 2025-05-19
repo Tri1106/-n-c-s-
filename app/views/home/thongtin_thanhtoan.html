@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Đặt Tour - Tính tiền realtime</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            padding: 20px;
+        }
+
+        .container {
+            display: flex;
+            max-width: 1200px;
+            margin: auto;
+            gap: 30px;
+        }
+
+        .left-column, .right-column {
+            background: #fff;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px #ccc;
+        }
+
+        .left-column { flex: 2; }
+        .right-column { flex: 1; }
+
+        h2 { color: #007bff; }
+        h3 { margin-top: 30px; }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .age-inputs {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .summary-box {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+        }
+
+        .summary-box img {
+            width: 100%;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
+        .total {
+            font-size: 18px;
+            font-weight: bold;
+            color: red;
+            margin-top: 15px;
+        }
+
+        .btn-submit {
+            margin-top: 20px;
+            background: #28a745;
+            color: white;
+            padding: 15px 25px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .btn-submit:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Cột trái -->
+    <div class="left-column">
+        <h2>Thông tin khách hàng</h2>
+        <form>
+            <div class="form-group">
+                <label>Họ tên *</label>
+                <input type="text" required>
+            </div>
+            <div class="form-group">
+                <label>Email *</label>
+                <input type="email" required>
+            </div>
+            <div class="form-group">
+                <label>Số điện thoại *</label>
+                <input type="tel" required>
+            </div>
+            <div class="form-group">
+                <label>Địa chỉ</label>
+                <textarea rows="2"></textarea>
+            </div>
+
+            <h3>Thông tin hành khách</h3>
+            <div class="age-inputs">
+                <div>
+                    <label>Người lớn (4.990.000₫)</label>
+                    <input type="number" id="adult" min="0" value="1">
+                </div>
+                <div>
+                    <label>Trẻ em (2.990.000₫)</label>
+                    <input type="number" id="child" min="0" value="0">
+                </div>
+                <div>
+                    <label>Phụ thu phòng đơn (1.800.000₫)</label>
+                    <input type="checkbox" id="singleRoom">
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Cột phải -->
+    <div class="right-column">
+        <h2>Tóm tắt chuyến đi</h2>
+        <div class="summary-box">
+            <img src="https://cdn2.ivivu.com/2023/06/kotam.jpg" alt="ảnh tour">
+            <p><strong>Tour:</strong> Buôn Ma Thuột – Pleiku – Măng Đen</p>
+            <p><strong>Mã tour:</strong> NDSGN577-024-210525XE-V</p>
+            <p><strong>Thời gian:</strong> 21/05/2025 – 25/05/2025</p>
+            <p><strong>Lộ trình:</strong> TP.HCM → Hồ Tà Đùng → TP.HCM</p>
+
+            <hr>
+            <p id="summaryText">Tạm tính...</p>
+            <p class="total" id="totalPrice">Tổng tiền: 6.490.000 ₫</p>
+            <form action="/thanh-toan" method="POST">
+            <!-- Bạn có thể thêm các hidden input để truyền giá trị -->
+            <input type="hidden" name="tongTien" id="hiddenTotal">
+            <button type="submit" class="btn-submit">Đặt ngay</button>
+        </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Giá cơ bản
+    const adultPrice = 4990000;
+    const childPrice = 2990000;
+    const singleRoomFee = 1800000;
+
+    const adultInput = document.getElementById('adult');
+    const childInput = document.getElementById('child');
+    const singleRoomCheckbox = document.getElementById('singleRoom');
+
+    const totalPriceElement = document.getElementById('totalPrice');
+    const summaryText = document.getElementById('summaryText');
+
+    function formatCurrency(vnd) {
+        return vnd.toLocaleString('vi-VN') + ' ₫';
+    }
+
+    function updatePrice() {
+        const adults = parseInt(adultInput.value || '0');
+        const children = parseInt(childInput.value || '0');
+        const hasSingleRoom = singleRoomCheckbox.checked;
+
+        let total = adults * adultPrice + children * childPrice;
+        if (hasSingleRoom) total += singleRoomFee;
+
+        totalPriceElement.textContent = `Tổng tiền: ${formatCurrency(total)}`;
+        summaryText.innerHTML = `
+            Người lớn: ${adults} x ${formatCurrency(adultPrice)}<br>
+            Trẻ em: ${children} x ${formatCurrency(childPrice)}<br>
+            ${hasSingleRoom ? 'Phụ thu phòng đơn: ' + formatCurrency(singleRoomFee) : ''}
+        `;
+    }
+
+    adultInput.addEventListener('input', updatePrice);
+    childInput.addEventListener('input', updatePrice);
+    singleRoomCheckbox.addEventListener('change', updatePrice);
+
+    // Tính lần đầu khi load
+    updatePrice();
+</script>
+
+</body>
+</html>

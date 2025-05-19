@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>Thanh toán tour du lịch</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f7fa;
+      padding: 20px;
+    }
+
+    .container {
+      display: flex;
+      max-width: 1200px;
+      margin: auto;
+      gap: 20px;
+    }
+
+    .left-box, .right-box {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 0 10px #ccc;
+      padding: 25px;
+    }
+
+    .left-box {
+      flex: 2;
+    }
+
+    .right-box {
+      flex: 1;
+    }
+
+    h3 {
+      color: #004085;
+      border-bottom: 1px solid #ccc;
+      padding-bottom: 8px;
+      margin-bottom: 15px;
+    }
+
+    .info-row {
+      margin-bottom: 10px;
+    }
+
+    .info-row strong {
+      display: inline-block;
+      width: 120px;
+    }
+
+    .highlight {
+      color: red;
+      font-weight: bold;
+    }
+
+    .booking-code {
+      color: red;
+      font-weight: bold;
+    }
+
+    .booking-status {
+      color: #007bff;
+      font-weight: bold;
+    }
+
+    .btn-pay {
+      display: block;
+      width: 100%;
+      background-color: #dc3545;
+      color: white;
+      border: none;
+      padding: 15px;
+      font-size: 16px;
+      border-radius: 5px;
+      margin-top: 20px;
+      cursor: pointer;
+    }
+
+    .btn-pay:hover {
+      background-color: #c82333;
+    }
+
+    img.tour-image {
+      width: 100%;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <!-- Bên trái: thông tin liên lạc + chi tiết booking -->
+  <div class="left-box">
+    <h3>THÔNG TIN LIÊN LẠC</h3>
+    <div class="info-row"><strong>Họ tên:</strong> Ten Le</div>
+    <div class="info-row"><strong>Email:</strong>@gmail.com</div>
+    <div class="info-row"><strong>Điện thoại:</strong> *****052</div>
+    <div class="info-row"><strong>Địa chỉ:</strong>  Khánh Hòa</div>
+    <div class="info-row"><strong>Ghi chú:</strong> Booking từ Travel.com.vn (Tour giờ chót – 300.000₫/1 khách)</div>
+
+    <h3>CHI TIẾT BOOKING</h3>
+    <div class="info-row"><strong>Mã đặt chỗ:</strong> <span class="booking-code">250519J442S4</span></div>
+    <div class="info-row"><strong>Ngày tạo:</strong> 19/05/2025 19:31</div>
+    <div class="info-row"><strong>Trị giá booking:</strong> 6.490.000 ₫</div>
+    <div class="info-row"><strong>Đã thanh toán:</strong> 0 ₫</div>
+    <div class="info-row"><strong>Còn lại:</strong> 6.490.000 ₫</div>
+    <div class="info-row"><strong>Tình trạng:</strong> <span class="booking-status">Booking của quý khách đã được xác nhận thành công</span></div>
+    <div class="info-row"><strong>Hạn thanh toán:</strong> <span class="highlight">19/05/2025 20:31</span> <em>(Theo giờ Việt Nam. Sẽ tự động huỷ nếu quá thời hạn)</em></div>
+  </div>
+
+  <!-- Bên phải: phiếu xác nhận booking -->
+  <div class="right-box">
+    <h3>PHIẾU XÁC NHẬN BOOKING</h3>
+    <img src="https://cdn2.ivivu.com/2023/06/kotam.jpg" class="tour-image" alt="Ảnh tour">
+    <p><strong>Tour:</strong> Buôn Ma Thuột – Bảo Tàng Cà Phê – Pleiku – Măng Đen – Buôn Kotam – Biển Hồ Tơ Nưng</p>
+    <p><strong>Số booking:</strong> <span class="booking-code">250519J442S4</span></p>
+    <p><strong>Mã tour:</strong> NDSGN577-024-210525XE-V</p>
+
+    <h4>🚌 THÔNG TIN CHUYẾN XE</h4>
+    <p><strong>Ngày đi:</strong> 21/05/2025 – 05:30 → Hồ Tà Đùng – 00:00</p>
+    <p><strong>Ngày về:</strong> 25/05/2025 – 00:00 → TP.HCM – 05:30</p>
+
+    <form action="/thanh-toan" method="POST">
+      <input type="hidden" name="bookingCode" value="250519J442S4" />
+      <input type="hidden" name="amount" value="6490000" />
+      <button type="submit" class="btn-pay">Thanh toán ngay</button>
+    </form>
+  </div>
+</div>
+
+</body>
+</html>

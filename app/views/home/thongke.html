@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>Thống kê tour đã đặt</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      padding: 30px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: auto;
+      background: #fff;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      margin-bottom: 20px;
+      color: #007bff;
+    }
+
+    form {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-bottom: 30px;
+      align-items: center;
+    }
+
+    form label {
+      font-weight: bold;
+    }
+
+    form input, form select {
+      padding: 8px 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    form button {
+      padding: 10px 20px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    form button:hover {
+      background: #0056b3;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    table th, table td {
+      border: 1px solid #ccc;
+      padding: 12px;
+      text-align: left;
+    }
+
+    table th {
+      background-color: #f1f1f1;
+    }
+
+    .status-paid {
+      color: green;
+      font-weight: bold;
+    }
+
+    .status-unpaid {
+      color: red;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2>THỐNG KÊ TOUR ĐÃ ĐẶT</h2>
+
+  <form method="GET" action="/admin/thong-ke">
+    <div>
+      <label for="fromDate">Từ ngày:</label><br>
+      <input type="date" id="fromDate" name="fromDate">
+    </div>
+
+    <div>
+      <label for="toDate">Đến ngày:</label><br>
+      <input type="date" id="toDate" name="toDate">
+    </div>
+
+    <div>
+      <label for="tourName">Tên tour:</label><br>
+      <input type="text" id="tourName" name="tourName" placeholder="Nhập tên tour...">
+    </div>
+
+    <div>
+      <label for="status">Trạng thái:</label><br>
+      <select name="status" id="status">
+        <option value="">-- Tất cả --</option>
+        <option value="paid">Đã thanh toán</option>
+        <option value="unpaid">Chưa thanh toán</option>
+      </select>
+    </div>
+
+    <div style="align-self: end;">
+      <button type="submit">Lọc kết quả</button>
+    </div>
+  </form>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Mã booking</th>
+        <th>Khách hàng</th>
+        <th>Tên tour</th>
+        <th>Ngày đặt</th>
+        <th>Số khách</th>
+        <th>Trạng thái</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Dữ liệu mẫu, bạn có thể thay thế bằng vòng lặp EJS hoặc JS -->
+      <tr>
+        <td>BK12345</td>
+        <td>Nguyễn Văn A</td>
+        <td>Buôn Ma Thuột – Pleiku</td>
+        <td>2025-05-19</td>
+        <td>2</td>
+        <td class="status-paid">Đã thanh toán</td>
+      </tr>
+      <tr>
+        <td>BK12346</td>
+        <td>Lê Thị B</td>
+        <td>Măng Đen – Biển Hồ</td>
+        <td>2025-05-18</td>
+        <td>3</td>
+        <td class="status-unpaid">Chưa thanh toán</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+</body>
+</html>
