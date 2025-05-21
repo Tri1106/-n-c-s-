@@ -145,9 +145,16 @@ router.delete("/delete-tour/:tourID", async (req, res) => {
     const tourID = req.params.tourID;
 
     const pool = await connect();
+
+    // Xóa các lịch trình liên quan trước
     await pool.request().input("TourID", sql.VarChar, tourID).query(`
-        DELETE FROM Tours WHERE TourID = @TourID
-      `);
+      DELETE FROM Itineraries WHERE TourID = @TourID
+    `);
+
+    // Sau đó xóa tour
+    await pool.request().input("TourID", sql.VarChar, tourID).query(`
+      DELETE FROM Tours WHERE TourID = @TourID
+    `);
 
     res.send(" Tour đã được xóa thành công!");
   } catch (err) {
@@ -161,7 +168,7 @@ router.post("/add-hotel", (req, res) => {
   upload.single("hotelImage")(req, res, async (err) => {
     if (err) {
       console.error("❌ Lỗi multer khi thêm khách sạn:", err);
-      return res.status(500).send(" Lỗi khi tải ảnh khách sạn.");
+      return res.status(500).json({ message: "Lỗi khi tải ảnh khách sạn." });
     }
 
     try {
@@ -169,7 +176,7 @@ router.post("/add-hotel", (req, res) => {
       const imagePath = req.file ? "/uploads/" + req.file.filename : null;
 
       if (!tourID || !hotelName || !location || !pricePerNight) {
-        return res.status(400).send(" Thiếu thông tin khách sạn.");
+        return res.status(400).json({ message: "Thiếu thông tin khách sạn." });
       }
 
       if (Array.isArray(tourID)) {
@@ -180,7 +187,7 @@ router.post("/add-hotel", (req, res) => {
       }
       tourID = tourID.trim();
       if (tourID.length === 0) {
-        return res.status(400).send(" tourID không hợp lệ.");
+        return res.status(400).json({ message: "tourID không hợp lệ." });
       }
 
       console.log("Received tourID:", tourID);
@@ -200,10 +207,10 @@ router.post("/add-hotel", (req, res) => {
           VALUES (@HotelID, @TourID, @HotelName, @Location, @PricePerNight, @ImageURL)
         `);
 
-      res.send(" Khách sạn đã được thêm thành công!");
+      res.json({ message: "Khách sạn đã được thêm thành công!" });
     } catch (err) {
       console.error(" Lỗi khi thêm khách sạn:", err);
-      res.status(500).send(" Lỗi khi thêm khách sạn.");
+      res.status(500).json({ message: "Lỗi khi thêm khách sạn." });
     }
   });
 });
@@ -215,7 +222,7 @@ router.post("/add-flight", upload.none(), async (req, res) => {
       airline,
       departurePoint,
       destinationPoint,
-      flightPrice,
+      price,
       departTime,
       returnTime,
     } = req.body;
@@ -226,7 +233,7 @@ router.post("/add-flight", upload.none(), async (req, res) => {
       !airline ||
       !departurePoint ||
       !destinationPoint ||
-      !flightPrice ||
+      !price ||
       !departTime ||
       !returnTime
     ) {
@@ -242,7 +249,7 @@ router.post("/add-flight", upload.none(), async (req, res) => {
     destinationPoint = Array.isArray(destinationPoint)
       ? destinationPoint[0]
       : destinationPoint;
-    flightPrice = Array.isArray(flightPrice) ? flightPrice[0] : flightPrice;
+    price = Array.isArray(price) ? price[0] : price;
     departTime = Array.isArray(departTime) ? departTime[0] : departTime;
     returnTime = Array.isArray(returnTime) ? returnTime[0] : returnTime;
 
@@ -251,7 +258,7 @@ router.post("/add-flight", upload.none(), async (req, res) => {
     airline = String(airline).trim();
     departurePoint = String(departurePoint).trim();
     destinationPoint = String(destinationPoint).trim();
-    flightPrice = String(flightPrice).trim();
+    price = String(price).trim();
     departTime = String(departTime).trim();
     returnTime = String(returnTime).trim();
 
@@ -339,10 +346,10 @@ router.post("/add-flight", upload.none(), async (req, res) => {
       return res.status(400).send(" returnTime không hợp lệ.");
     }
 
-    // Validate flightPrice as number
-    const flightPriceNum = Number(flightPrice);
-    if (isNaN(flightPriceNum)) {
-      return res.status(400).send(" flightPrice không hợp lệ.");
+    // Validate price as number
+    const priceNum = Number(price);
+    if (isNaN(priceNum)) {
+      return res.status(400).send(" price không hợp lệ.");
     }
 
     const pool = await connect();
@@ -355,17 +362,17 @@ router.post("/add-flight", upload.none(), async (req, res) => {
       .input("Airline", sql.NVarChar, airline)
       .input("DeparturePoint", sql.NVarChar, departurePoint)
       .input("DestinationPoint", sql.NVarChar, destinationPoint)
-      .input("Price", sql.Decimal(10, 2), flightPriceNum)
+      .input("Price", sql.Decimal(10, 2), priceNum)
       .input("DepartureDate", sql.DateTime, departDateObj)
       .input("ReturnDate", sql.DateTime, returnDateObj).query(`
         INSERT INTO Flights (FlightID, TourID, Airline, DeparturePoint, DestinationPoint, Price, DepartureDate, ReturnDate)
         VALUES (@FlightID, @TourID, @Airline, @DeparturePoint, @DestinationPoint, @Price, @DepartureDate, @ReturnDate)
       `);
 
-    res.send(" Vé máy bay đã được thêm thành công!");
+    res.json({ message: "Vé máy bay đã được thêm thành công!" });
   } catch (err) {
     console.error(" Lỗi khi thêm vé máy bay:", err);
-    res.status(500).send(" Lỗi khi thêm vé máy bay.");
+    res.status(500).json({ message: "Lỗi khi thêm vé máy bay." });
   }
 });
 
@@ -406,11 +413,144 @@ router.get("/tour-details/:tourID", async (req, res) => {
         WHERE TourID = @TourID
       `);
 
+    // Lấy danh sách lịch trình theo tourID
+    const itinerariesResult = await pool
+      .request()
+      .input("TourID", sql.VarChar, tourID).query(`
+        SELECT ItineraryID, DayNumber, Title, Meals, Details
+        FROM Itineraries
+        WHERE TourID = @TourID
+        ORDER BY DayNumber ASC
+      `);
+
     res.json({
       tour,
       hotels: hotelsResult.recordset,
       flights: flightsResult.recordset,
+      itineraries: itinerariesResult.recordset,
     });
+  } catch (err) {
+    console.error("Lỗi lấy chi tiết tour:", err);
+    res.status(500).send("Lỗi server khi lấy chi tiết tour");
+  }
+});
+
+router.post("/add-itinerary", async (req, res) => {
+  try {
+    const { tourID, dayNumber, title, meals, details } = req.body;
+    if (!tourID || !dayNumber || !title) {
+      return res.status(400).send("Thiếu thông tin bắt buộc.");
+    }
+    const itineraryID = "I" + Date.now();
+
+    const pool = await connect();
+    await pool
+      .request()
+      .input("ItineraryID", sql.VarChar(15), itineraryID)
+      .input("TourID", sql.VarChar(15), tourID)
+      .input("DayNumber", sql.Int, dayNumber)
+      .input("Title", sql.NVarChar, title)
+      .input("Meals", sql.NVarChar, meals || null)
+      .input("Details", sql.NVarChar, details || null)
+      .query(`
+        INSERT INTO Itineraries (ItineraryID, TourID, DayNumber, Title, Meals, Details)
+        VALUES (@ItineraryID, @TourID, @DayNumber, @Title, @Meals, @Details)
+      `);
+
+    res.send("Lịch trình đã được thêm thành công!");
+  } catch (err) {
+    console.error("Lỗi khi thêm lịch trình:", err);
+    res.status(500).send("Lỗi khi thêm lịch trình.");
+  }
+});
+
+router.put("/edit-itinerary/:itineraryID", async (req, res) => {
+  try {
+    const { dayNumber, title, meals, details } = req.body;
+    const itineraryID = req.params.itineraryID;
+    if (!dayNumber || !title) {
+      return res.status(400).send("Thiếu thông tin bắt buộc.");
+    }
+
+    const pool = await connect();
+    await pool
+      .request()
+      .input("ItineraryID", sql.VarChar(15), itineraryID)
+      .input("DayNumber", sql.Int, dayNumber)
+      .input("Title", sql.NVarChar, title)
+      .input("Meals", sql.NVarChar, meals || null)
+      .input("Details", sql.NVarChar, details || null)
+      .query(`
+        UPDATE Itineraries
+        SET DayNumber = @DayNumber, Title = @Title, Meals = @Meals, Details = @Details
+        WHERE ItineraryID = @ItineraryID
+      `);
+
+    res.send("Lịch trình đã được cập nhật thành công!");
+  } catch (err) {
+    console.error("Lỗi khi cập nhật lịch trình:", err);
+    res.status(500).send("Lỗi khi cập nhật lịch trình.");
+  }
+});
+
+router.delete("/delete-itinerary/:itineraryID", async (req, res) => {
+  try {
+    const itineraryID = req.params.itineraryID;
+
+    const pool = await connect();
+    await pool
+      .request()
+      .input("ItineraryID", sql.VarChar(15), itineraryID)
+      .query(`
+        DELETE FROM Itineraries WHERE ItineraryID = @ItineraryID
+      `);
+
+    res.send("Lịch trình đã được xóa thành công!");
+  } catch (err) {
+    console.error("Lỗi khi xóa lịch trình:", err);
+    res.status(500).send("Lỗi khi xóa lịch trình.");
+  }
+});
+
+router.get("/itineraries/:tourID", async (req, res) => {
+  try {
+    const tourID = req.params.tourID;
+
+    const pool = await connect();
+    const result = await pool
+      .request()
+      .input("TourID", sql.VarChar(15), tourID)
+      .query(`
+        SELECT ItineraryID, DayNumber, Title, Meals, Details
+        FROM Itineraries
+        WHERE TourID = @TourID
+        ORDER BY DayNumber ASC
+      `);
+
+    res.json(result.recordset);
+  } catch (err) {
+    console.error("Lỗi khi lấy lịch trình:", err);
+    res.status(500).send("Lỗi khi lấy lịch trình.");
+  }
+});
+
+// Route lấy chi tiết tour theo tourID
+router.get("/tours/:tourID", async (req, res) => {
+  try {
+    const tourID = req.params.tourID;
+    const pool = await connect();
+    const result = await pool
+      .request()
+      .input("TourID", sql.VarChar, tourID)
+      .query(`
+        SELECT TourID, TourName, Destination, Price, SoCho, DiemThamQuan, AmThuc, DoiTuongThichHop, ThoiGianLyTuong, PhuongTien, KhuyenMai, ImageURL
+        FROM Tours
+        WHERE TourID = @TourID
+      `);
+    if (result.recordset.length === 0) {
+      return res.status(404).send("Tour không tồn tại");
+    }
+    res.json(result.recordset[0]);
   } catch (err) {
     console.error("Lỗi lấy chi tiết tour:", err);
     res.status(500).send("Lỗi server khi lấy chi tiết tour");

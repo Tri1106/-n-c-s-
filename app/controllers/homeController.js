@@ -180,10 +180,19 @@ router.get("/api/tours/:id", async (req, res) => {
         WHERE TourID = @tourId
       `);
 
+    // Lấy danh sách lịch trình theo tourID
+    const itinerariesResult = await pool.request().input("tourId", tourId).query(`
+        SELECT ItineraryID, DayNumber AS day, Title, Meals AS meals, Details AS details
+        FROM Itineraries
+        WHERE TourID = @tourId
+        ORDER BY DayNumber ASC
+      `);
+
     res.json({
       tour,
       hotels: hotelsResult.recordset,
       flights: flightsResult.recordset,
+      itineraries: itinerariesResult.recordset,
     });
   } catch (err) {
     console.error("Lỗi khi lấy dữ liệu tour theo ID:", err);
@@ -198,6 +207,19 @@ router.get('/api/check-login', (req, res) => {
   } else {
     res.json({ loggedIn: false });
   }
+});
+
+router.get("/thongtin_thanhtoan", (req, res) => {
+  const filePath = path.join(
+    __dirname,
+    "..",
+    "..",
+    "app",
+    "views",
+    "home",
+    "thongtin_thanhtoan.html"
+  );
+  res.sendFile(filePath);
 });
 
 module.exports = router;
