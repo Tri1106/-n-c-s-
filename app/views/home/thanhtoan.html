@@ -93,41 +93,142 @@
   <!-- Bên trái: thông tin liên lạc + chi tiết booking -->
   <div class="left-box">
     <h3>THÔNG TIN LIÊN LẠC</h3>
-    <div class="info-row"><strong>Họ tên:</strong> Ten Le</div>
-    <div class="info-row"><strong>Email:</strong>@gmail.com</div>
-    <div class="info-row"><strong>Điện thoại:</strong> *****052</div>
-    <div class="info-row"><strong>Địa chỉ:</strong>  Khánh Hòa</div>
-    <div class="info-row"><strong>Ghi chú:</strong> </div>
+    <div class="info-row"><strong>Họ tên:</strong> <span id="customerName"></span></div>
+    <div class="info-row"><strong>Email:</strong> <span id="customerEmail"></span></div>
+    <div class="info-row"><strong>Điện thoại:</strong> <span id="customerPhone"></span></div>
+    <div class="info-row"><strong>Địa chỉ:</strong> <span id="customerAddress"></span></div>
+    <div class="info-row"><strong>Ghi chú:</strong> <span id="customerNote"></span></div>
 
     <h3>CHI TIẾT BOOKING</h3>
-    <div class="info-row"><strong>Mã đặt chỗ:</strong> <span class="booking-code">250519J442S4</span></div>
-    <div class="info-row"><strong>Ngày tạo:</strong> 19/05/2025 19:31</div>
-    <div class="info-row"><strong>Trị giá booking:</strong> 6.490.000 ₫</div>
-    <div class="info-row"><strong>Đã thanh toán:</strong> 0 ₫</div>
-    <div class="info-row"><strong>Còn lại:</strong> 6.490.000 ₫</div>
-    <div class="info-row"><strong>Tình trạng:</strong> <span class="booking-status">Booking của quý khách đã được xác nhận thành công</span></div>
-    <div class="info-row"><strong>Hạn thanh toán:</strong> <span class="highlight">19/05/2025 20:31</span> <em>(Theo giờ Việt Nam. Sẽ tự động huỷ nếu quá thời hạn)</em></div>
+    <div class="info-row"><strong>Mã đặt chỗ:</strong> <span class="booking-code" id="bookingCode"></span></div>
+    <div class="info-row"><strong>Ngày tạo:</strong> <span id="createdAt"></span></div>
+    <div class="info-row"><strong>Trị giá booking:</strong> <span id="totalAmount"></span></div>
+    <div class="info-row"><strong>Đã thanh toán:</strong> <span id="paidAmount"></span></div>
+    <div class="info-row"><strong>Còn lại:</strong> <span id="remainingAmount"></span></div>
+    <div class="info-row"><strong>Tình trạng:</strong> <span class="booking-status" id="bookingStatus"></span></div>
+    <div class="info-row"><strong>Hạn thanh toán:</strong> <span class="highlight" id="paymentDeadline"></span> <em>(Theo giờ Việt Nam. Sẽ tự động huỷ nếu quá thời hạn)</em></div>
   </div>
 
   <!-- Bên phải: phiếu xác nhận booking -->
   <div class="right-box">
     <h3>PHIẾU XÁC NHẬN BOOKING</h3>
-    <img src="https://i1-dulich.vnecdn.net/2023/06/23/PasyT-8521-1687513752.jpg?w=0&h=0&q=100&dpr=1&fit=crop&s=Qetls3cfDjko6nE4nGKhEg" class="tour-image" alt="Ảnh tour">
-    <p><strong>Tour:</strong> Buôn Ma Thuột – Bảo Tàng Cà Phê – Pleiku – Măng Đen – Buôn Kotam – Biển Hồ Tơ Nưng</p>
-    <p><strong>Số booking:</strong> <span class="booking-code">250519J442S4</span></p>
-    <p><strong>Mã tour:</strong> NDSGN577-024-210525XE-V</p>
+    <img src="" class="tour-image" alt="Ảnh tour" id="tourImage">
+    <p><strong>Tour:</strong> <span id="tourName"></span></p>
+    <p><strong>Số booking:</strong> <span class="booking-code" id="bookingCodeRight"></span></p>
+    <p><strong>Mã tour:</strong> <span id="tourID"></span></p>
 
     <h4>🚌 THÔNG TIN CHUYẾN XE</h4>
-    <p><strong>Ngày đi:</strong> 21/05/2025 – 05:30 → Hồ Tà Đùng – 00:00</p>
-    <p><strong>Ngày về:</strong> 25/05/2025 – 00:00 → TP.HCM – 05:30</p>
+    <p><strong>Ngày đi:</strong> <span id="departureInfo"></span></p>
+    <p><strong>Ngày về:</strong> <span id="returnInfo"></span></p>
 
-    <form action="/thanh-toan" method="POST">
-      <input type="hidden" name="bookingCode" value="250519J442S4" />
-      <input type="hidden" name="amount" value="6490000" />
+    <form action="/thanh-toan" method="POST" id="paymentForm">
+      <input type="hidden" name="bookingCode" id="hiddenBookingCode" value="" />
+      <input type="hidden" name="amount" id="hiddenAmount" value="" />
       <button type="submit" class="btn-pay">Thanh toán ngay</button>
     </form>
   </div>
 </div>
+
+<script>
+  function formatCurrency(vnd) {
+    return vnd.toLocaleString('vi-VN') + ' ₫';
+  }
+
+  function formatDateTime(dateStr) {
+    const date = new Date(dateStr);
+    if (isNaN(date)) return '';
+    const options = { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' };
+    return date.toLocaleDateString('vi-VN', options) + ' ' + date.toLocaleTimeString('vi-VN', {hour: '2-digit', minute: '2-digit'});
+  }
+
+  async function loadBookingDetails() {
+    // Lấy bookingCode từ query param
+    const urlParams = new URLSearchParams(window.location.search);
+    const bookingCode = urlParams.get('bookingCode');
+    if (!bookingCode) {
+      alert('Không tìm thấy mã đặt chỗ.');
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/booking-details/${bookingCode}`);
+      if (!res.ok) {
+        alert('Không tìm thấy booking.');
+        return;
+      }
+      const data = await res.json();
+
+      console.log("Flights data:", data.flights); // Log dữ liệu flights để kiểm tra
+
+      // Cập nhật thông tin khách hàng
+      document.getElementById('customerName').textContent = data.booking.CustomerName || '';
+      document.getElementById('customerEmail').textContent = data.booking.Email || '';
+      document.getElementById('customerPhone').textContent = data.booking.Phone || '';
+      document.getElementById('customerAddress').textContent = data.booking.Address || '';
+      document.getElementById('customerNote').textContent = data.booking.Note || '';
+
+      // Cập nhật thông tin booking
+      document.getElementById('bookingCode').textContent = data.booking.BookingCode || '';
+      document.getElementById('bookingCodeRight').textContent = data.booking.BookingCode || '';
+      document.getElementById('createdAt').textContent = formatDateTime(data.booking.CreatedAt) || '';
+      document.getElementById('totalAmount').textContent = formatCurrency(data.booking.TotalAmount) || '';
+      document.getElementById('paidAmount').textContent = formatCurrency(data.booking.PaidAmount) || '';
+      document.getElementById('remainingAmount').textContent = formatCurrency(data.booking.RemainingAmount) || '';
+      document.getElementById('bookingStatus').textContent = data.booking.Status || '';
+      document.getElementById('paymentDeadline').textContent = formatDateTime(data.booking.PaymentDeadline) || '';
+
+      // Cập nhật thông tin tour
+      document.getElementById('tourName').textContent = data.tour.TourName || '';
+      document.getElementById('tourID').textContent = data.tour.TourID || '';
+      document.getElementById('tourImage').src = data.tour.ImageURL || '';
+      document.getElementById('tourImage').alt = data.tour.TourName || 'Ảnh tour';
+
+      // Cập nhật thông tin chuyến xe (lấy từ flights)
+      if (data.flights && data.flights.length > 0) {
+        // Sắp xếp flights theo DepartureDate tăng dần
+        const sortedFlights = data.flights.slice().sort((a, b) => new Date(a.DepartureDate) - new Date(b.DepartureDate));
+        const departFlight = sortedFlights[0];
+        const returnFlight = sortedFlights[sortedFlights.length - 1];
+
+        const optionsDate = { day: '2-digit', month: '2-digit', year: 'numeric' };
+        const optionsTime = { hour: '2-digit', minute: '2-digit' };
+
+        if (departFlight) {
+          const departDate = new Date(departFlight.DepartureDate);
+          document.getElementById('departureInfo').textContent = `${departDate.toLocaleDateString('vi-VN', optionsDate)} – ${departDate.toLocaleTimeString('vi-VN', optionsTime)} → ${departFlight.DeparturePoint} – ${departFlight.DestinationPoint}`;
+        } else {
+          document.getElementById('departureInfo').textContent = 'Chưa cập nhật';
+        }
+        if (returnFlight && returnFlight.ReturnDate && returnFlight.ReturnDate !== departFlight.DepartureDate) {
+          const returnDate = new Date(returnFlight.ReturnDate);
+          document.getElementById('returnInfo').textContent = `${returnDate.toLocaleDateString('vi-VN', optionsDate)} – ${returnDate.toLocaleTimeString('vi-VN', optionsTime)} → ${returnFlight.DestinationPoint} – ${returnFlight.DeparturePoint}`;
+        } else {
+          // Nếu ReturnDate không hợp lệ hoặc trùng ngày đi, tính ngày về = ngày đi + ThoiGianLyTuong (số ngày tour)
+          const departDate = new Date(departFlight.DepartureDate);
+          const tourDays = data.tour.ThoiGianLyTuong ? parseInt(data.tour.ThoiGianLyTuong) : 1;
+          const calculatedReturnDate = new Date(departDate);
+          calculatedReturnDate.setDate(departDate.getDate() + tourDays);
+          document.getElementById('returnInfo').textContent = `${calculatedReturnDate.toLocaleDateString('vi-VN', optionsDate)} – ${calculatedReturnDate.toLocaleTimeString('vi-VN', optionsTime)} → ${departFlight.DestinationPoint} – ${departFlight.DeparturePoint} (tính theo số ngày tour)`;
+        }
+      } else {
+        document.getElementById('departureInfo').textContent = 'Chưa cập nhật';
+        document.getElementById('returnInfo').textContent = 'Chưa cập nhật';
+      }
+
+      // Cập nhật form ẩn
+      document.getElementById('hiddenBookingCode').value = data.booking.BookingCode || '';
+      document.getElementById('hiddenAmount').value = data.booking.RemainingAmount || '';
+
+    } catch (error) {
+      console.error('Lỗi khi tải thông tin booking:', error);
+      alert('Lỗi khi tải thông tin booking.');
+    }
+  }
+
+  window.onload = () => {
+    loadBookingDetails();
+  };
+</script>
 
 </body>
 </html>

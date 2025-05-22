@@ -92,72 +92,72 @@
 <body>
 
 <div class="container">
-    <!-- Cột trái -->
-    <div class="left-column">
-        <h2>Thông tin khách hàng</h2>
-        <form>
+    <!-- Gộp form thành 1 form duy nhất -->
+    <form action="/thanh-toan" method="POST" class="container" style="gap: 30px;">
+
+        <!-- Cột trái -->
+        <div class="left-column">
+            <h2>Thông tin khách hàng</h2>
             <div class="form-group">
-                <label>Họ tên *</label>
-                <input type="text" required>
+                <label for="name">Họ tên *</label>
+                <input type="text" id="name" name="name" required>
             </div>
             <div class="form-group">
-                <label>Email *</label>
-                <input type="email" required>
+                <label for="email">Email *</label>
+                <input type="email" id="email" name="email" required>
             </div>
             <div class="form-group">
-                <label>Số điện thoại *</label>
-                <input type="tel" required>
+                <label for="phone">Số điện thoại *</label>
+                <input type="tel" id="phone" name="phone" required>
             </div>
             <div class="form-group">
-                <label>Địa chỉ</label>
-                <textarea rows="2"></textarea>
+                <label for="address">Địa chỉ</label>
+                <textarea id="address" name="address" rows="2"></textarea>
             </div>
 
             <h3>Thông tin hành khách</h3>
             <div class="age-inputs">
                 <div>
-                    <label>Người lớn (4.990.000₫)</label>
-                    <input type="number" id="adult" min="0" value="1">
+                    <label>Người lớn (<span id="adultPriceLabel">0₫</span>)</label>
+                    <input type="number" id="adult" name="adult" min="0" value="1">
                 </div>
                 <div>
-                    <label>Trẻ em (2.990.000₫)</label>
-                    <input type="number" id="child" min="0" value="0">
+                    <label>Trẻ em (<span id="childPriceLabel">0₫</span>)</label>
+                    <input type="number" id="child" name="child" min="0" value="0">
                 </div>
                 <div>
-                    <label>Phụ thu phòng đơn (1.800.000₫)</label>
-                    <input type="checkbox" id="singleRoom">
+                    <label>Phụ thu phòng đơn (<span id="singleRoomPriceLabel">0₫</span>)</label>
+                    <input type="checkbox" id="singleRoom" name="singleRoom">
                 </div>
             </div>
-        </form>
-    </div>
-
-    <!-- Cột phải -->
-    <div class="right-column">
-        <h2>Tóm tắt chuyến đi</h2>
-        <div class="summary-box">
-            <img src="https://i1-dulich.vnecdn.net/2023/06/23/PasyT-8521-1687513752.jpg?w=0&h=0&q=100&dpr=1&fit=crop&s=Qetls3cfDjko6nE4nGKhEg" alt="ảnh tour">
-            <p><strong>Tour:</strong> Buôn Ma Thuột – Pleiku – Măng Đen</p>
-            <p><strong>Mã tour:</strong> NDSGN577-024-210525XE-V</p>
-            <p><strong>Thời gian:</strong> 21/05/2025 – 25/05/2025</p>
-            <p><strong>Lộ trình:</strong> TP.HCM → Hồ Tà Đùng → TP.HCM</p>
-
-            <hr>
-            <p id="summaryText">Tạm tính...</p>
-            <p class="total" id="totalPrice">Tổng tiền: 6.490.000 ₫</p>
-            <form action="/thanh-toan" method="POST">
-            <!-- Bạn có thể thêm các hidden input để truyền giá trị -->
-            <input type="hidden" name="tongTien" id="hiddenTotal">
-            <button type="submit" class="btn-submit">Đặt ngay</button>
-        </form>
         </div>
-    </div>
+
+        <!-- Cột phải -->
+        <div class="right-column">
+            <h2>Tóm tắt chuyến đi</h2>
+            <div class="summary-box">
+                <img src="https://i1-dulich.vnecdn.net/2023/06/23/PasyT-8521-1687513752.jpg?w=0&h=0&q=100&dpr=1&fit=crop&s=Qetls3cfDjko6nE4nGKhEg" alt="ảnh tour">
+                <p><strong>Tour:</strong> Buôn Ma Thuột – Pleiku – Măng Đen</p>
+                <p><strong>Mã tour:</strong> <span id="tourIDSummary">Chưa cập nhật</span></p>
+                <p><strong>Thời gian:</strong> <span id="timeSummary">Chưa cập nhật</span></p>
+                <p><strong>Lộ trình:</strong> <span id="routeSummary">Chưa cập nhật</span></p>
+
+                <hr>
+                <p id="summaryText">Tạm tính...</p>
+                <p class="total" id="totalPrice">Tổng tiền: 6.490.000 ₫</p>
+                <!-- Hidden input để truyền tổng tiền -->
+                <input type="hidden" name="tongTien" id="hiddenTotal">
+                <button type="submit" class="btn-submit">Đặt ngay</button>
+            </div>
+        </div>
+    </form>
 </div>
 
 <script>
     // Giá cơ bản
-    const adultPrice = 4990000;
-    const childPrice = 2990000;
-    const singleRoomFee = 1800000;
+    let adultPrice = 0;
+    let childPrice = 0;
+    let singleRoomFee = 0;
 
     const adultInput = document.getElementById('adult');
     const childInput = document.getElementById('child');
@@ -165,6 +165,10 @@
 
     const totalPriceElement = document.getElementById('totalPrice');
     const summaryText = document.getElementById('summaryText');
+
+    const adultPriceLabel = document.getElementById('adultPriceLabel');
+    const childPriceLabel = document.getElementById('childPriceLabel');
+    const singleRoomPriceLabel = document.getElementById('singleRoomPriceLabel');
 
     function formatCurrency(vnd) {
         return vnd.toLocaleString('vi-VN') + ' ₫';
@@ -184,62 +188,134 @@
             Trẻ em: ${children} x ${formatCurrency(childPrice)}<br>
             ${hasSingleRoom ? 'Phụ thu phòng đơn: ' + formatCurrency(singleRoomFee) : ''}
         `;
+        // Cập nhật hidden input tổng tiền
+        document.getElementById('hiddenTotal').value = total;
     }
 
     adultInput.addEventListener('input', updatePrice);
     childInput.addEventListener('input', updatePrice);
     singleRoomCheckbox.addEventListener('change', updatePrice);
 
-    // Tính lần đầu khi load
-    updatePrice();
-</script>
-
-<script>
-  // Lấy tourId từ query param
-  function getQueryParam(param) {
-    const urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get(param);
-  }
-
-  async function loadTourSummary() {
-    const tourId = getQueryParam("tourId");
-    if (!tourId) {
-      alert("Không tìm thấy mã tour.");
-      return;
+    // Lấy tourId từ query param
+    function getQueryParam(param) {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(param);
     }
 
-    try {
-      const res = await fetch(`/api/tours/${tourId}`);
-      if (!res.ok) {
-        alert("Không tìm thấy tour.");
-        return;
-      }
-      const data = await res.json();
-      const tour = data.tour;
+    async function loadTourSummary() {
+        const tourId = getQueryParam("tourId");
+        if (!tourId) {
+            alert("Không tìm thấy mã tour.");
+            return;
+        }
 
-      // Cập nhật thông tin tour trong phần tóm tắt chuyến đi
-      const summaryBox = document.querySelector(".summary-box");
-      summaryBox.querySelector("img").src = tour.HinhAnh || "";
-      summaryBox.querySelector("img").alt = tour.TenTour || "Ảnh tour";
-      summaryBox.querySelector("p strong:nth-child(1)").nextSibling.textContent = ` ${tour.TenTour || ""}`;
-      summaryBox.querySelector("p:nth-child(2)").innerHTML = `<strong>Mã tour:</strong> ${tour.TourID || ""}`;
+        try {
+            const res = await fetch(`/provider/tour-details/${tourId}`);
+            if (!res.ok) {
+                alert("Không tìm thấy tour.");
+                return;
+            }
+            const data = await res.json();
+            const tour = data.tour;
 
-      // Giả sử tour có ngày bắt đầu và ngày kết thúc, nếu không có thì có thể lấy từ flights hoặc tính toán khác
-      // Ở đây tạm thời để trống hoặc bạn có thể bổ sung thêm API lấy ngày
-      summaryBox.querySelector("p:nth-child(3)").innerHTML = `<strong>Thời gian:</strong> Chưa cập nhật`;
+            console.log("Debug flights data:", data.flights);
+            if (data.flights) {
+                data.flights.forEach((f, idx) => {
+                    console.log(`Flight ${idx} ReturnDate raw:`, f.ReturnDate);
+                    if (f.ReturnDate) {
+                        console.log(`Flight ${idx} ReturnDate parsed:`, new Date(f.ReturnDate));
+                    }
+                });
+            }
 
-      // Lộ trình cũng chưa có dữ liệu, bạn có thể bổ sung thêm nếu có
-      summaryBox.querySelector("p:nth-child(4)").innerHTML = `<strong>Lộ trình:</strong> Chưa cập nhật`;
+            // Cập nhật giá
+            adultPrice = tour.Price;
+            childPrice = Math.round(adultPrice * 0.7);
+            singleRoomFee = data.singleRoomPrice || 0;
 
-    } catch (error) {
-      console.error("Lỗi khi tải thông tin tour:", error);
-      alert("Lỗi khi tải thông tin tour.");
+            adultPriceLabel.textContent = formatCurrency(adultPrice);
+            childPriceLabel.textContent = formatCurrency(childPrice);
+            singleRoomPriceLabel.textContent = formatCurrency(singleRoomFee);
+
+            // Cập nhật thông tin tour trong phần tóm tắt chuyến đi
+            const summaryBox = document.querySelector(".summary-box");
+            summaryBox.querySelector("img").src = tour.ImageURL || "";
+            summaryBox.querySelector("img").alt = tour.TourName || "Ảnh tour";
+            summaryBox.querySelector("p strong:nth-child(1)").nextSibling.textContent = ` ${tour.TourName || ""}`;
+            const tourIDSummary = document.getElementById("tourIDSummary");
+            if (tourIDSummary) {
+                tourIDSummary.textContent = tour.TourID || "";
+            }
+
+            // Cập nhật thời gian (nếu có)
+            if (data.flights && data.flights.length > 0) {
+                // Lấy ngày đi là ngày nhỏ nhất trong DepartureDate
+                const departDates = data.flights.map(f => new Date(f.DepartureDate));
+                const minDate = new Date(Math.min(...departDates));
+                // Lấy ngày về là ngày lớn nhất trong ReturnDate, lọc kỹ hơn các giá trị hợp lệ
+                const returnDates = data.flights
+                    .map(f => {
+                        if (f.ReturnDate && typeof f.ReturnDate === 'string' && f.ReturnDate.trim() !== '') {
+                            const d = new Date(f.ReturnDate);
+                            if (!isNaN(d.getTime())) {
+                                return d;
+                            }
+                        }
+                        return null;
+                    })
+                    .filter(d => d !== null);
+                const maxReturnDate = returnDates.length > 0 ? new Date(Math.max(...returnDates)) : null;
+
+                const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
+                const timeSummary = document.getElementById("timeSummary");
+            if (timeSummary) {
+                console.log("Debug maxReturnDate:", maxReturnDate);
+                console.log("Debug minDate:", minDate);
+                if (maxReturnDate && maxReturnDate > minDate && !isNaN(maxReturnDate.getTime())) {
+                    timeSummary.textContent = `${minDate.toLocaleDateString('vi-VN', options)} – ${maxReturnDate.toLocaleDateString('vi-VN', options)}`;
+                } else {
+                    // Nếu không có ReturnDate hợp lệ, tính ngày về = ngày đi + số ngày tour
+                    let tourDays = 1;
+                    if (data.tour.ThoiGianLyTuong && !isNaN(parseInt(data.tour.ThoiGianLyTuong)) && parseInt(data.tour.ThoiGianLyTuong) > 0) {
+                        tourDays = parseInt(data.tour.ThoiGianLyTuong);
+                    }
+                    const calculatedReturnDate = new Date(minDate);
+                    calculatedReturnDate.setDate(minDate.getDate() + tourDays);
+                    timeSummary.textContent = `${minDate.toLocaleDateString('vi-VN', options)} – ${calculatedReturnDate.toLocaleDateString('vi-VN', options)}`;
+                }
+            }
+            } else {
+                const timeSummary = document.getElementById("timeSummary");
+                if (timeSummary) {
+                    timeSummary.textContent = "Chưa cập nhật";
+                }
+            }
+
+            // Cập nhật lộ trình (nếu có)
+            if (data.itineraries && data.itineraries.length > 0) {
+                const route = data.itineraries.map(i => i.Title).join(" → ");
+                const routeSummary = document.getElementById("routeSummary");
+                if (routeSummary) {
+                    routeSummary.textContent = route;
+                }
+            } else {
+                const routeSummary = document.getElementById("routeSummary");
+                if (routeSummary) {
+                    routeSummary.textContent = "Chưa cập nhật";
+                }
+            }
+
+            updatePrice();
+
+        } catch (error) {
+            console.error("Lỗi khi tải thông tin tour:", error);
+            alert("Lỗi khi tải thông tin tour.");
+        }
     }
-  }
 
-  window.onload = () => {
-    loadTourSummary();
-  };
+    window.onload = () => {
+        loadTourSummary();
+    };
 </script>
 
 </body>

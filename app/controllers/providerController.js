@@ -408,7 +408,7 @@ router.get("/tour-details/:tourID", async (req, res) => {
     const flightsResult = await pool
       .request()
       .input("TourID", sql.VarChar, tourID).query(`
-        SELECT FlightID, Airline, DeparturePoint, DestinationPoint, Price, DepartureDate
+        SELECT FlightID, Airline, DeparturePoint, DestinationPoint, Price, DepartureDate, ReturnDate
         FROM Flights
         WHERE TourID = @TourID
       `);
@@ -423,11 +423,18 @@ router.get("/tour-details/:tourID", async (req, res) => {
         ORDER BY DayNumber ASC
       `);
 
+    // Lấy giá phòng đơn từ khách sạn đầu tiên nếu có
+    let singleRoomPrice = null;
+    if (hotelsResult.recordset.length > 0) {
+      singleRoomPrice = hotelsResult.recordset[0].PricePerNight;
+    }
+
     res.json({
       tour,
       hotels: hotelsResult.recordset,
       flights: flightsResult.recordset,
       itineraries: itinerariesResult.recordset,
+      singleRoomPrice,
     });
   } catch (err) {
     console.error("Lỗi lấy chi tiết tour:", err);
