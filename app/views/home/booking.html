@@ -33,12 +33,23 @@
       <h2>Vé máy bay</h2>
       <div id="flights" class="grid"></div>
 
-      <div id="booking-section" style="margin-top: 2rem;">
+      <div id="booking-section" style="margin-top: 2rem">
         <label for="seatCount">Số chỗ đặt:</label>
-        <input type="number" id="seatCount" min="1" value="1" style="width: 60px; margin-left: 10px;" />
-        <span id="remainingSeats" style="margin-left: 20px; font-weight: bold;"></span>
+        <input
+          type="number"
+          id="seatCount"
+          min="1"
+          value="1"
+          style="width: 60px; margin-left: 10px"
+        />
+        <span
+          id="remainingSeats"
+          style="margin-left: 20px; font-weight: bold"
+        ></span>
         <br />
-        <button id="payButton" style="margin-top: 10px; display: none;">Thanh toán</button>
+        <button id="payButton" style="margin-top: 10px; display: none">
+          Thanh toán
+        </button>
       </div>
 
       <div class="message" id="message"></div>
@@ -46,7 +57,7 @@
 
     <style>
       body {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
         margin: 20px;
         color: #222;
         background-color: #f9f9f9;
@@ -57,7 +68,7 @@
         background: #fff;
         padding: 20px 30px;
         border-radius: 10px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
       }
       h1 {
         color: #d32f2f;
@@ -92,13 +103,13 @@
         border-radius: 12px;
         padding: 1rem;
         width: 30%;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
         background-color: #fff;
         transition: transform 0.3s ease, box-shadow 0.3s ease;
       }
       .card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
       }
       .card img {
         width: 100%;
@@ -200,9 +211,14 @@
         container.innerHTML = `
           <h2>${tour.TenTour}</h2>
           <p><strong>Điểm đến:</strong> ${tour.Destination}</p>
-          <p><strong>Giá:</strong> ${tour.Gia.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} VNĐ</p>
+          <p><strong>Giá:</strong> ${tour.Gia.toString().replace(
+            /\B(?=(\d{3})+(?!\d))/g,
+            ","
+          )} VNĐ</p>
           <p><strong>Số chỗ:</strong> ${tour.SoCho}</p>
-          <img src="${tour.HinhAnh}" alt="${tour.TenTour}" style="width:75%; max-height:300px; object-fit:cover; border-radius:8px; margin-top:20px;" />
+          <img src="${tour.HinhAnh}" alt="${
+          tour.TenTour
+        }" style="width:75%; max-height:300px; object-fit:cover; border-radius:8px; margin-top:20px;" />
         `;
       }
 
@@ -219,7 +235,10 @@
             <img src="${hotel.ImageURL}" alt="${hotel.HotelName}" />
             <h3>${hotel.HotelName}</h3>
             <p><strong>Vị trí:</strong> ${hotel.Location}</p>
-            <p><strong>Giá mỗi đêm:</strong> ${hotel.PricePerNight.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} VND</p>
+            <p><strong>Giá mỗi đêm:</strong> ${hotel.PricePerNight.toString().replace(
+              /\B(?=(\d{3})+(?!\d))/g,
+              ","
+            )} VND</p>
           </div>
         `
           )
@@ -239,9 +258,16 @@
             <h3>${flight.Airline}</h3>
             <p><strong>Điểm đi:</strong> ${flight.DeparturePoint}</p>
             <p><strong>Điểm đến:</strong> ${flight.DestinationPoint}</p>
-            <p><strong>Giá:</strong> ${flight.Price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} VND</p>
-            <p><strong>Ngày đi:</strong> ${new Date(flight.DepartureDate).toLocaleDateString()}</p>
-            <p><strong>Ngày về:</strong> ${new Date(flight.ReturnDate).toLocaleDateString()}</p>
+            <p><strong>Giá:</strong> ${flight.Price.toString().replace(
+              /\B(?=(\d{3})+(?!\d))/g,
+              ","
+            )} VND</p>
+            <p><strong>Ngày đi:</strong> ${new Date(
+              flight.DepartureDate
+            ).toLocaleDateString()}</p>
+            <p><strong>Ngày về:</strong> ${new Date(
+              flight.ReturnDate
+            ).toLocaleDateString()}</p>
           </div>
         `
           )
@@ -314,10 +340,52 @@
       };
 
       // Xử lý sự kiện nút thanh toán
-      document.getElementById("payButton").addEventListener("click", () => {
-        const seatCount = parseInt(document.getElementById("seatCount").value, 10);
-        alert(`Bạn đã đặt ${seatCount} chỗ. Tiến hành thanh toán.`);
-        // TODO: Thêm xử lý thanh toán thực tế
+      document.getElementById("payButton").addEventListener("click", async () => {
+        const seatCount = parseInt(
+          document.getElementById("seatCount").value,
+          10
+        );
+        if (isNaN(seatCount) || seatCount < 1) {
+          alert("Vui lòng nhập số chỗ hợp lệ.");
+          return;
+        }
+
+        // Lấy thông tin khách hàng từ form hoặc session nếu có
+        const name = prompt("Nhập tên của bạn:");
+        const email = prompt("Nhập email của bạn:");
+        const phone = prompt("Nhập số điện thoại của bạn:");
+        const address = prompt("Nhập địa chỉ của bạn (không bắt buộc):");
+
+        if (!name || !email || !phone) {
+          alert("Tên, email và số điện thoại là bắt buộc.");
+          return;
+        }
+
+        try {
+          const response = await fetch("/thanh-toan", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ name, email, phone, address }),
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            alert("Lỗi khi đặt tour: " + (errorData.message || "Unknown error"));
+            return;
+          }
+
+          const result = await response.json();
+
+          if (result.redirectUrl) {
+            window.location.href = result.redirectUrl;
+          } else {
+            alert("Đặt tour thành công!");
+          }
+        } catch (error) {
+          alert("Lỗi khi gửi yêu cầu: " + error.message);
+        }
       });
     </script>
   </body>

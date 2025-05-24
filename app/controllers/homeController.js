@@ -154,7 +154,7 @@ router.get("/api/tours/:id", async (req, res) => {
     // Lấy thông tin tour
     const tourResult = await pool
       .request()
-    .input("tourId", sql.VarChar(15), tourId).query(`
+      .input("tourId", sql.VarChar(15), tourId).query(`
         SELECT TourID, ProviderID, TourName AS TenTour, Destination, Price AS Gia, Status, ImageURL AS HinhAnh, SoCho,
           DiemThamQuan, AmThuc, DoiTuongThichHop, ThoiGianLyTuong, PhuongTien, KhuyenMai
         FROM Tours
@@ -181,7 +181,8 @@ router.get("/api/tours/:id", async (req, res) => {
       `);
 
     // Lấy danh sách lịch trình theo tourID
-    const itinerariesResult = await pool.request().input("tourId", tourId).query(`
+    const itinerariesResult = await pool.request().input("tourId", tourId)
+      .query(`
         SELECT ItineraryID, DayNumber AS day, Title, Meals AS meals, Details AS details
         FROM Itineraries
         WHERE TourID = @tourId
@@ -201,7 +202,7 @@ router.get("/api/tours/:id", async (req, res) => {
 });
 
 // API kiểm tra đăng nhập
-router.get('/api/check-login', (req, res) => {
+router.get("/api/check-login", (req, res) => {
   if (req.session.user) {
     res.json({ loggedIn: true, role: req.session.user.role });
   } else {
@@ -220,6 +221,97 @@ router.get("/thongtin_thanhtoan", (req, res) => {
     "thongtin_thanhtoan.html"
   );
   res.sendFile(filePath);
+});
+
+router.post("/thanh-toan", async (req, res) => {
+  try {
+    const { name, email, phone, address } = req.body;
+
+    if (!name || !email || !phone) {
+      return res.status(400).json({ message: "Thiếu thông tin bắt buộc." });
+    }
+
+    const pool = await connect();
+
+    // Tạo CustomerID mới (ví dụ: timestamp)
+    const customerID = "C" + Date.now();
+
+    // Theo thông tin bạn cung cấp, trường id trong session user là UserID
+    const userID = req.session.user ? req.session.user.id : null;
+
+    await pool
+      .request()
+      .input("CustomerID", sql.VarChar, customerID)
+      .input("UserID", sql.VarChar, userID)
+      .input("Name", sql.NVarChar, name)
+      .input("Email", sql.NVarChar, email)
+      .input("Phone", sql.NVarChar, phone)
+      .input("Address", sql.NVarChar, address || null).query(`
+        INSERT INTO Customers (CustomerID, UserID, Name, Email, Phone, Address)
+        VALUES (@CustomerID, @UserID, @Name, @Email, @Phone, @Address)
+      `);
+
+    // Trả về URL để frontend chuyển hướng sang trang thongtin_thanhtoan
+    res.json({
+      message: "Đặt tour thành công!",
+      redirectUrl: `/thongtin_thanhtoan?customerID=${customerID}`,
+      customer: { customerID, name, email, phone, address },
+    });
+  } catch (err) {
+    console.error("Lỗi khi đặt tour:", err);
+    res.status(500).json({ message: "Lỗi server khi đặt tour." });
+  }
+});
+
+router.get("/api/booking-details/:bookingCode", async (req, res) => {
+  const bookingCode = req.params.bookingCode;
+  try {
+    const pool = await connect();
+
+    // Lấy thông tin booking theo BookingID (bookingCode)
+    const bookingResult = await pool
+      .request()
+      .input("bookingCode", sql.VarChar, bookingCode)
+      .query(`
+        SELECT b.BookingID, b.CustomerID, b.TourID, b.BookingDate, b.TotalAmount, b.PaidAmount, b.RemainingAmount, b.Status, b.PaymentDeadline,
+               c.Name AS CustomerName, c.Email, c.Phone, c.Address, c.Note,
+               t.TourName, t.ImageURL, t.ThoiGianLyTuong
+        FROM Bookings b
+        LEFT JOIN Customers c ON b.CustomerID = c.CustomerID
+        LEFT JOIN Tours t ON b.TourID = t.TourID
+        WHERE b.BookingID = @bookingCode
+      `);
+
+    if (bookingResult.recordset.length === 0) {
+      return res.status(404).json({ error: "Không tìm thấy booking" });
+    }
+
+    const booking = bookingResult.recordset[0];
+
+    // Lấy danh sách vé máy bay theo TourID
+    const flightsResult = await pool
+      .request()
+      .input("tourId", sql.VarChar, booking.TourID)
+      .query(`
+        SELECT FlightID, Airline, DeparturePoint, DestinationPoint, Price, DepartureDate, ReturnDate
+        FROM Flights
+        WHERE TourID = @tourId
+      `);
+
+    res.json({
+      booking,
+      tour: {
+        TourID: booking.TourID,
+        TourName: booking.TourName,
+        ImageURL: booking.ImageURL,
+        ThoiGianLyTuong: booking.ThoiGianLyTuong,
+      },
+      flights: flightsResult.recordset,
+    });
+  } catch (err) {
+    console.error("Lỗi khi lấy thông tin booking:", err);
+    res.status(500).json({ error: "Lỗi server" });
+  }
 });
 
 module.exports = router;
