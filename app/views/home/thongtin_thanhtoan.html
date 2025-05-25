@@ -93,7 +93,7 @@
 
 <div class="container">
     <!-- Gộp form thành 1 form duy nhất -->
-    <form action="/thanh-toan" method="POST" class="container" style="gap: 30px;">
+<form id="bookingForm" class="container" style="gap: 30px;">
 
         <!-- Cột trái -->
         <div class="left-column">
@@ -196,10 +196,10 @@
     childInput.addEventListener('input', updatePrice);
     singleRoomCheckbox.addEventListener('change', updatePrice);
 
-    // Lấy tourId từ query param
+    // Lấy tourId từ query param (hỗ trợ cả tourId và tourid)
     function getQueryParam(param) {
         const urlParams = new URLSearchParams(window.location.search);
-        return urlParams.get(param);
+        return urlParams.get(param) || urlParams.get(param.toLowerCase());
     }
 
     async function loadTourSummary() {
@@ -316,6 +316,69 @@
     window.onload = () => {
         loadTourSummary();
     };
+
+    // Thêm xử lý submit form để gửi dữ liệu lên server và chuyển trang
+    document.getElementById('bookingForm').addEventListener('submit', async function(event) {
+        event.preventDefault();
+
+        // Lấy dữ liệu form
+        const formData = {
+            name: document.getElementById('name').value,
+            email: document.getElementById('email').value,
+            phone: document.getElementById('phone').value,
+            address: document.getElementById('address').value,
+            adult: document.getElementById('adult').value,
+            child: document.getElementById('child').value,
+            singleRoom: document.getElementById('singleRoom').checked,
+            totalPrice: document.getElementById('hiddenTotal').value,
+            tourID: new URLSearchParams(window.location.search).get('tourId') || new URLSearchParams(window.location.search).get('tourid'),
+            timeSummary: document.getElementById('timeSummary').textContent,
+            routeSummary: document.getElementById('routeSummary').textContent
+        };
+
+        try {
+            const response = await fetch('/thanh-toan', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                alert('Lỗi khi đặt tour: ' + (errorData.message || 'Lỗi không xác định'));
+                return;
+            }
+
+            const result = await response.json();
+
+            alert('Đặt tour thành công!');
+
+            // Lưu dữ liệu booking vào sessionStorage để trang thanh toán sử dụng
+            const bookingData = {
+                bookingID: result.booking.bookingID,
+                bookingDate: result.booking.bookingDate,
+                customerID: result.customer.customerID,
+                name: result.customer.name,
+                email: result.customer.email,
+                phone: result.customer.phone,
+                address: result.customer.address,
+                tourId: new URLSearchParams(window.location.search).get('tourId') || new URLSearchParams(window.location.search).get('tourid'),
+                adult: document.getElementById('adult').value,
+                child: document.getElementById('child').value,
+                singleRoom: document.getElementById('singleRoom').checked,
+            };
+            sessionStorage.setItem('bookingData', JSON.stringify(bookingData));
+
+            // Chuyển trang theo redirectUrl trả về từ server
+            if (result.redirectUrl) {
+                window.location.href = result.redirectUrl;
+            } else {
+                window.location.href = '/thanhtoan';
+            }
+        } catch (error) {
+            alert('Lỗi khi gửi yêu cầu đặt tour: ' + error.message);
+        }
+    });
 </script>
 
 </body>

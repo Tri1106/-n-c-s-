@@ -121,10 +121,10 @@
     <p><strong>Ngày đi:</strong> <span id="departureInfo"></span></p>
     <p><strong>Ngày về:</strong> <span id="returnInfo"></span></p>
 
-    <form action="/thanh-toan" method="POST" id="paymentForm">
+    <form id="paymentForm">
       <input type="hidden" name="bookingCode" id="hiddenBookingCode" value="" />
       <input type="hidden" name="amount" id="hiddenAmount" value="" />
-      <button type="submit" class="btn-pay">Thanh toán ngay</button>
+      <button type="submit" class="btn-pay" id="btnPayNow">Thanh toán ngay</button>
     </form>
   </div>
 </div>
@@ -142,82 +142,120 @@
   }
 
   async function loadBookingDetails() {
-    // Lấy bookingCode từ query param
     const urlParams = new URLSearchParams(window.location.search);
-    const bookingCode = urlParams.get('bookingCode');
-    if (!bookingCode) {
-      alert('Không tìm thấy mã đặt chỗ.');
+    const bookingID = urlParams.get('bookingID');
+    if (!bookingID) {
+      alert('Không tìm thấy mã đặt chỗ trong URL.');
       return;
     }
 
     try {
-      const res = await fetch(`/api/booking-details/${bookingCode}`);
+      const res = await fetch(`/api/bookings/${bookingID}`);
       if (!res.ok) {
         alert('Không tìm thấy booking.');
         return;
       }
       const data = await res.json();
 
-      console.log("Flights data:", data.flights); // Log dữ liệu flights để kiểm tra
-
       // Cập nhật thông tin khách hàng
-      document.getElementById('customerName').textContent = data.booking.CustomerName || '';
-      document.getElementById('customerEmail').textContent = data.booking.Email || '';
-      document.getElementById('customerPhone').textContent = data.booking.Phone || '';
-      document.getElementById('customerAddress').textContent = data.booking.Address || '';
-      document.getElementById('customerNote').textContent = data.booking.Note || '';
+      document.getElementById('customerName').textContent = data.CustomerName || '';
+      document.getElementById('customerEmail').textContent = data.Email || '';
+      document.getElementById('customerPhone').textContent = data.Phone || '';
+      document.getElementById('customerAddress').textContent = data.Address || '';
+      document.getElementById('customerNote').textContent = ''; // Nếu có trường ghi chú, cập nhật tương tự
 
       // Cập nhật thông tin booking
-      document.getElementById('bookingCode').textContent = data.booking.BookingCode || '';
-      document.getElementById('bookingCodeRight').textContent = data.booking.BookingCode || '';
-      document.getElementById('createdAt').textContent = formatDateTime(data.booking.CreatedAt) || '';
-      document.getElementById('totalAmount').textContent = formatCurrency(data.booking.TotalAmount) || '';
-      document.getElementById('paidAmount').textContent = formatCurrency(data.booking.PaidAmount) || '';
-      document.getElementById('remainingAmount').textContent = formatCurrency(data.booking.RemainingAmount) || '';
-      document.getElementById('bookingStatus').textContent = data.booking.Status || '';
-      document.getElementById('paymentDeadline').textContent = formatDateTime(data.booking.PaymentDeadline) || '';
+      document.getElementById('bookingCode').textContent = data.BookingID || 'Chưa có mã';
+      document.getElementById('bookingCodeRight').textContent = data.BookingID || 'Chưa có mã';
+      document.getElementById('createdAt').textContent = formatDateTime(data.BookingDate) || '';
+
+      // Lấy dữ liệu số lượng đặt từ sessionStorage
+      const bookingDataStr = sessionStorage.getItem('bookingData');
+      let adultCount = 1;
+      let childCount = 0;
+      let singleRoom = false;
+      if (bookingDataStr) {
+        try {
+          const bookingData = JSON.parse(bookingDataStr);
+          adultCount = parseInt(bookingData.adult) || 1;
+          childCount = parseInt(bookingData.child) || 0;
+          singleRoom = bookingData.singleRoom || false;
+        } catch (e) {
+          console.error('Lỗi khi phân tích dữ liệu booking từ sessionStorage:', e);
+        }
+      }
+
+      // Tính lại tổng giá trị booking dựa trên số lượng
+      const adultPrice = data.Price || 0;
+      const childPrice = Math.round(adultPrice * 0.7);
+      const singleRoomFee = 0; // Nếu có phí phụ thu phòng đơn, có thể lấy từ API hoặc cố định
+
+      let totalPrice = adultCount * adultPrice + childCount * childPrice;
+      if (singleRoom) totalPrice += singleRoomFee;
+
+      document.getElementById('totalAmount').textContent = formatCurrency(totalPrice);
+      document.getElementById('paidAmount').textContent = data.PaidAmount ? formatCurrency(data.PaidAmount) : '0 ₫';
+      const paidAmountValid = typeof data.PaidAmount === 'number' && data.PaidAmount >= 0;
+      const priceValid = totalPrice >= 0;
+      let remainingAmountValue = 0;
+      if (priceValid) {
+        if (paidAmountValid) {
+          remainingAmountValue = totalPrice - data.PaidAmount;
+          if (remainingAmountValue < 0) remainingAmountValue = 0;
+        } else {
+          remainingAmountValue = totalPrice;
+        }
+      }
+      document.getElementById('remainingAmount').textContent = formatCurrency(remainingAmountValue);
+      document.getElementById('bookingStatus').textContent = data.Status || 'Chưa thanh toán';
+      document.getElementById('paymentDeadline').textContent = data.PaymentDeadline ? formatDateTime(data.PaymentDeadline) : '';
 
       // Cập nhật thông tin tour
-      document.getElementById('tourName').textContent = data.tour.TourName || '';
-      document.getElementById('tourID').textContent = data.tour.TourID || '';
-      document.getElementById('tourImage').src = data.tour.ImageURL || '';
-      document.getElementById('tourImage').alt = data.tour.TourName || 'Ảnh tour';
+      document.getElementById('tourName').textContent = data.TourName || '';
+      document.getElementById('tourID').textContent = data.TourID || '';
+      document.getElementById('tourImage').src = data.ImageURL || '';
+      document.getElementById('tourImage').alt = data.TourName || 'Ảnh tour';
 
-      // Cập nhật thông tin chuyến xe (lấy từ flights)
-      if (data.flights && data.flights.length > 0) {
-        // Sắp xếp flights theo DepartureDate tăng dần
-        const sortedFlights = data.flights.slice().sort((a, b) => new Date(a.DepartureDate) - new Date(b.DepartureDate));
+      // Thông tin chuyến xe (nếu có)
+      if (data.Flights && data.Flights.length > 0) {
+        // Sắp xếp chuyến đi theo ngày khởi hành
+        const sortedFlights = data.Flights.slice().sort((a, b) => new Date(a.DepartureDate) - new Date(b.DepartureDate));
         const departFlight = sortedFlights[0];
         const returnFlight = sortedFlights[sortedFlights.length - 1];
 
         const optionsDate = { day: '2-digit', month: '2-digit', year: 'numeric' };
         const optionsTime = { hour: '2-digit', minute: '2-digit' };
 
-        if (departFlight) {
+        if (departFlight && departFlight.DepartureDate) {
           const departDate = new Date(departFlight.DepartureDate);
-          document.getElementById('departureInfo').textContent = `${departDate.toLocaleDateString('vi-VN', optionsDate)} – ${departDate.toLocaleTimeString('vi-VN', optionsTime)} → ${departFlight.DeparturePoint} – ${departFlight.DestinationPoint}`;
+          const formattedDate = departDate.toLocaleDateString('vi-VN', {day: '2-digit', month: '2-digit', year: 'numeric'});
+          // Chỉ lấy ngày, không lấy giờ
+          // Chỉ lấy ngày, không lấy địa điểm
+          document.getElementById('departureInfo').textContent = `${formattedDate}`;
         } else {
           document.getElementById('departureInfo').textContent = 'Chưa cập nhật';
         }
+
         if (returnFlight && returnFlight.ReturnDate && returnFlight.ReturnDate !== departFlight.DepartureDate) {
           const returnDate = new Date(returnFlight.ReturnDate);
-          document.getElementById('returnInfo').textContent = `${returnDate.toLocaleDateString('vi-VN', optionsDate)} – ${returnDate.toLocaleTimeString('vi-VN', optionsTime)} → ${returnFlight.DestinationPoint} – ${returnFlight.DeparturePoint}`;
+          const formattedDate = returnDate.toLocaleDateString('vi-VN', {day: '2-digit', month: '2-digit', year: 'numeric'});
+          // Chỉ lấy ngày, không lấy giờ
+          // Chỉ lấy ngày, không lấy địa điểm
+          document.getElementById('returnInfo').textContent = `${formattedDate}`;
+        } else if (departFlight && departFlight.DepartureDate) {
+          // Nếu ReturnDate không hợp lệ hoặc trùng ngày đi, không tính ngày về mà hiển thị chưa cập nhật
+          document.getElementById('returnInfo').textContent = 'Chưa cập nhật';
         } else {
-          // Nếu ReturnDate không hợp lệ hoặc trùng ngày đi, tính ngày về = ngày đi + ThoiGianLyTuong (số ngày tour)
-          const departDate = new Date(departFlight.DepartureDate);
-          const tourDays = data.tour.ThoiGianLyTuong ? parseInt(data.tour.ThoiGianLyTuong) : 1;
-          const calculatedReturnDate = new Date(departDate);
-          calculatedReturnDate.setDate(departDate.getDate() + tourDays);
-          document.getElementById('returnInfo').textContent = `${calculatedReturnDate.toLocaleDateString('vi-VN', optionsDate)} – ${calculatedReturnDate.toLocaleTimeString('vi-VN', optionsTime)} → ${departFlight.DestinationPoint} – ${departFlight.DeparturePoint} (tính theo số ngày tour)`;
+          document.getElementById('returnInfo').textContent = 'Chưa cập nhật';
         }
       } else {
         document.getElementById('departureInfo').textContent = 'Chưa cập nhật';
         document.getElementById('returnInfo').textContent = 'Chưa cập nhật';
       }
 
-      // Cập nhật form ẩn
-      document.getElementById('hiddenBookingCode').value = data.booking.BookingCode || '';
-      document.getElementById('hiddenAmount').value = data.booking.RemainingAmount || '';
+      // Cập nhật form ẩn để gửi thanh toán
+      document.getElementById('hiddenBookingCode').value = data.BookingID || '';
+      document.getElementById('hiddenAmount').value = totalPrice || '';
 
     } catch (error) {
       console.error('Lỗi khi tải thông tin booking:', error);
@@ -228,7 +266,36 @@
   window.onload = () => {
     loadBookingDetails();
   };
-</script>
 
+  // Xử lý khi bấm nút Thanh toán ngay: mở tab mới sang trang payment-page với dữ liệu cần thiết
+  document.getElementById('btnPayNow').addEventListener('click', function(event) {
+    event.preventDefault();
+
+    const bookingCode = document.getElementById('hiddenBookingCode').value;
+    const amount = document.getElementById('hiddenAmount').value;
+    const customerName = document.getElementById('customerName').textContent;
+    const customerEmail = document.getElementById('customerEmail').textContent;
+    const customerPhone = document.getElementById('customerPhone').textContent;
+    const tourID = document.getElementById('tourID').textContent;
+
+    if (!bookingCode || !amount) {
+      alert('Thiếu thông tin đặt tour để thanh toán.');
+      return;
+    }
+
+    // Tạo URL với query params truyền dữ liệu sang trang payment-page
+    const params = new URLSearchParams({
+      bookingCode,
+      amount,
+      name: customerName,
+      email: customerEmail,
+      phone: customerPhone,
+      tourID
+    });
+
+    const paymentUrl = `/payment-page?${params.toString()}`;
+    window.open(paymentUrl, '_blank');
+  });
+</script>
 </body>
 </html>

@@ -211,6 +211,10 @@ router.get("/api/check-login", (req, res) => {
 });
 
 router.get("/thongtin_thanhtoan", (req, res) => {
+  const tourId = req.query.tourId || req.query.tourid; // hỗ trợ cả tourId hoặc tourid
+  if (!tourId) {
+    return res.status(400).send("Thiếu tham số tourId");
+  }
   const filePath = path.join(
     __dirname,
     "..",
@@ -223,94 +227,144 @@ router.get("/thongtin_thanhtoan", (req, res) => {
   res.sendFile(filePath);
 });
 
+router.get("/thanhtoan", (req, res) => {
+  const filePath = path.join(
+    __dirname,
+    "..",
+    "..",
+    "app",
+    "views",
+    "home",
+    "thanhtoan.html"
+  );
+  res.sendFile(filePath);
+});
+
+// Thêm route GET /payment-page để trả về file HTML payment-page.html
+router.get("/payment-page", (req, res) => {
+  const filePath = path.join(
+    __dirname,
+    "..",
+    "..",
+    "app",
+    "views",
+    "home",
+    "payment-page.html"
+  );
+  res.sendFile(filePath);
+});
+
 router.post("/thanh-toan", async (req, res) => {
   try {
-    const { name, email, phone, address } = req.body;
-
-    if (!name || !email || !phone) {
-      return res.status(400).json({ message: "Thiếu thông tin bắt buộc." });
-    }
+    const { name, email, phone, address, tourID, bookingCode, amount } = req.body;
 
     const pool = await connect();
 
-    // Tạo CustomerID mới (ví dụ: timestamp)
-    const customerID = "C" + Date.now();
+    if (name && email && phone && tourID) {
+      // Xử lý đặt chỗ mới
+      const customerID = "C" + Date.now();
+      const userID = req.session.user ? req.session.user.id : null;
+      const transaction = new sql.Transaction(pool);
+      await transaction.begin();
 
-    // Theo thông tin bạn cung cấp, trường id trong session user là UserID
-    const userID = req.session.user ? req.session.user.id : null;
+      try {
+        const request = new sql.Request(transaction);
 
-    await pool
-      .request()
-      .input("CustomerID", sql.VarChar, customerID)
-      .input("UserID", sql.VarChar, userID)
-      .input("Name", sql.NVarChar, name)
-      .input("Email", sql.NVarChar, email)
-      .input("Phone", sql.NVarChar, phone)
-      .input("Address", sql.NVarChar, address || null).query(`
-        INSERT INTO Customers (CustomerID, UserID, Name, Email, Phone, Address)
-        VALUES (@CustomerID, @UserID, @Name, @Email, @Phone, @Address)
-      `);
+        await request
+          .input("CustomerID", sql.VarChar, customerID)
+          .input("UserID", sql.VarChar, userID)
+          .input("Name", sql.NVarChar, name)
+          .input("Email", sql.NVarChar, email)
+          .input("Phone", sql.NVarChar, phone)
+          .input("Address", sql.NVarChar, address || null).query(`
+            INSERT INTO Customers (CustomerID, UserID, Name, Email, Phone, Address)
+            VALUES (@CustomerID, @UserID, @Name, @Email, @Phone, @Address)
+          `);
 
-    // Trả về URL để frontend chuyển hướng sang trang thongtin_thanhtoan
-    res.json({
-      message: "Đặt tour thành công!",
-      redirectUrl: `/thongtin_thanhtoan?customerID=${customerID}`,
-      customer: { customerID, name, email, phone, address },
-    });
+        const bookingID = "B" + Date.now();
+        const bookingDate = new Date();
+
+        await request
+          .input("BookingID", sql.VarChar, bookingID)
+          .input("CustomerID_param", sql.VarChar, customerID)
+          .input("TourID", sql.VarChar, tourID)
+          .input("BookingDate", sql.DateTime, bookingDate).query(`
+            INSERT INTO Bookings (BookingID, CustomerID, TourID, BookingDate)
+            VALUES (@BookingID, @CustomerID_param, @TourID, @BookingDate)
+          `);
+
+        await transaction.commit();
+
+        res.json({
+          message: "Đặt tour thành công!",
+          redirectUrl: `/thanhtoan?bookingID=${bookingID}&bookingDate=${bookingDate.toISOString()}&tourId=${tourID}`,
+          booking: { bookingID, bookingDate },
+          customer: { customerID, name, email, phone, address },
+        });
+      } catch (err) {
+        await transaction.rollback();
+        throw err;
+      }
+    } else if (bookingCode && amount) {
+      // Xử lý thanh toán cho booking hiện có
+      // Cập nhật trạng thái thanh toán, số tiền đã thanh toán trong bảng Bookings
+      await pool.request()
+        .input("BookingID", sql.VarChar, bookingCode)
+        .input("Amount", sql.Decimal, amount)
+        .query("UPDATE Bookings SET PaidAmount = ISNULL(PaidAmount, 0) + @Amount, Status = 'Đã thanh toán' WHERE BookingID = @BookingID");
+
+      // Trả về phản hồi thành công
+      res.json({ message: "Thanh toán thành công!" });
+    } else {
+      return res.status(400).json({ message: "Thiếu thông tin bắt buộc." });
+    }
   } catch (err) {
-    console.error("Lỗi khi đặt tour:", err);
-    res.status(500).json({ message: "Lỗi server khi đặt tour." });
+    console.error("Lỗi khi xử lý đặt chỗ hoặc thanh toán:", err);
+    res.status(500).json({ message: "Lỗi server khi xử lý đặt chỗ hoặc thanh toán." });
   }
 });
 
-router.get("/api/booking-details/:bookingCode", async (req, res) => {
-  const bookingCode = req.params.bookingCode;
+router.get("/api/bookings/:bookingID", async (req, res) => {
+  const bookingID = req.params.bookingID;
   try {
     const pool = await connect();
 
-    // Lấy thông tin booking theo BookingID (bookingCode)
+    // Lấy thông tin booking
     const bookingResult = await pool
       .request()
-      .input("bookingCode", sql.VarChar, bookingCode)
+      .input("bookingID", sql.VarChar, bookingID)
       .query(`
-        SELECT b.BookingID, b.CustomerID, b.TourID, b.BookingDate, b.TotalAmount, b.PaidAmount, b.RemainingAmount, b.Status, b.PaymentDeadline,
-               c.Name AS CustomerName, c.Email, c.Phone, c.Address, c.Note,
-               t.TourName, t.ImageURL, t.ThoiGianLyTuong
+        SELECT b.BookingID, b.BookingDate, b.TourID, b.CustomerID,
+               c.Name AS CustomerName, c.Email, c.Phone, c.Address,
+               t.TourName, t.Price, t.ImageURL, t.ThoiGianLyTuong
         FROM Bookings b
-        LEFT JOIN Customers c ON b.CustomerID = c.CustomerID
-        LEFT JOIN Tours t ON b.TourID = t.TourID
-        WHERE b.BookingID = @bookingCode
+        JOIN Customers c ON b.CustomerID = c.CustomerID
+        JOIN Tours t ON b.TourID = t.TourID
+        WHERE b.BookingID = @bookingID
       `);
 
     if (bookingResult.recordset.length === 0) {
-      return res.status(404).json({ error: "Không tìm thấy booking" });
+      return res.status(404).json({ error: "Không tìm thấy mã đặt chỗ." });
     }
 
     const booking = bookingResult.recordset[0];
 
-    // Lấy danh sách vé máy bay theo TourID
+    // Lấy thông tin chuyến bay (Flights) theo TourID
     const flightsResult = await pool
       .request()
-      .input("tourId", sql.VarChar, booking.TourID)
+      .input("tourID", sql.VarChar, booking.TourID)
       .query(`
         SELECT FlightID, Airline, DeparturePoint, DestinationPoint, Price, DepartureDate, ReturnDate
         FROM Flights
-        WHERE TourID = @tourId
+        WHERE TourID = @tourID
       `);
 
-    res.json({
-      booking,
-      tour: {
-        TourID: booking.TourID,
-        TourName: booking.TourName,
-        ImageURL: booking.ImageURL,
-        ThoiGianLyTuong: booking.ThoiGianLyTuong,
-      },
-      flights: flightsResult.recordset,
-    });
+    booking.Flights = flightsResult.recordset;
+
+    res.json(booking);
   } catch (err) {
     console.error("Lỗi khi lấy thông tin booking:", err);
-    res.status(500).json({ error: "Lỗi server" });
+    res.status(500).json({ error: "Lỗi server khi lấy thông tin booking." });
   }
 });
 
