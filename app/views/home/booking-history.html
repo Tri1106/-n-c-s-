@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <title>Lịch sử đơn đặt</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            margin: 0;
+        }
+        header {
+            background: #2e4357;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        nav {
+            background: #34495e;
+            padding: 10px 0;
+        }
+        nav ul {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 0;
+            padding: 0;
+        }
+        nav ul li,
+        nav ul li a {
+            color: white;
+            font-weight: bold;
+            text-decoration: none;
+        }
+        main {
+            padding: 30px;
+            max-width: 1200px;
+            margin: auto;
+        }
+        h2 {
+            text-align: center;
+            color: #2c3e50;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        th, td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #ddd;
+            text-align: center;
+        }
+        th {
+            background-color: #2980b9;
+            color: white;
+        }
+        tr:hover {
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Lịch sử đơn đặt</h1>
+    <nav>
+        <ul>
+            <li><a href="/home">Trang chủ</a></li>
+            <li><a href="/booking-history">Lịch sử đơn đặt</a></li>
+            <li><a href="/logout">Đăng xuất</a></li>
+        </ul>
+    </nav>
+</header>
+<main>
+    <h2>Danh sách đơn đặt của bạn</h2>
+    <table id="bookingHistoryTable">
+        <thead>
+            <tr>
+                <th>Mã đặt chỗ</th>
+                <th>Tour</th>
+                <th>Ngày đặt</th>
+                <th>Trạng thái thanh toán</th>
+                <th>Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Dữ liệu đơn đặt sẽ được thêm vào đây -->
+        </tbody>
+    </table>
+</main>
+<script>
+    async function fetchBookingHistory() {
+        try {
+            const response = await fetch('/user/bookings');
+            if (!response.ok) {
+                alert('Lỗi khi tải lịch sử đơn đặt.');
+                return;
+            }
+            const bookings = await response.json();
+            const tbody = document.querySelector('#bookingHistoryTable tbody');
+            tbody.innerHTML = '';
+            bookings.forEach(booking => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${booking.BookingID}</td>
+                    <td>${booking.TourName}</td>
+                    <td>${new Date(booking.BookingDate).toLocaleDateString('vi-VN')}</td>
+                    <td>${booking.PaymentStatus || 'Chưa thanh toán'}</td>
+                    <td><a href="/booking-detail/${booking.BookingID}">Xem chi tiết</a></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        } catch (error) {
+            console.error('Lỗi khi lấy lịch sử đơn đặt:', error);
+        }
+    }
+    window.onload = fetchBookingHistory;
+</script>
+</body>
+</html>

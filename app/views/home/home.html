@@ -302,6 +302,7 @@
           style="display: none"
           >Đăng xuất</a
         >
+        <a href="/booking-history" class="register-btn" id="booking-history-btn" style="margin-left: 10px; display: none;">Lịch sử đặt tour</a>
       </div>
     </nav>
 
@@ -319,36 +320,48 @@
           }
         }
 
-        const isLoggedIn = await checkLoginStatus();
+      const isLoggedIn = await checkLoginStatus();
 
-        if (isLoggedIn) {
-          document.getElementById("login-btn").style.display = "none";
-          document.getElementById("register-btn").style.display = "none";
-          const logoutBtn = document.getElementById("logout-btn");
-          logoutBtn.style.display = "inline-block";
+      if (isLoggedIn) {
+        document.getElementById("login-btn").style.display = "none";
+        document.getElementById("register-btn").style.display = "none";
+        const logoutBtn = document.getElementById("logout-btn");
+        logoutBtn.style.display = "inline-block";
 
-          logoutBtn.addEventListener("click", async (e) => {
-            e.preventDefault();
-            try {
-              const res = await fetch("/account/logout");
-              if (!res.ok) throw new Error("Lỗi khi đăng xuất");
-              const data = await res.json();
-              if (data.success) {
-                alert("Đăng xuất thành công");
-                window.location.reload();
-              } else {
-                alert("Đăng xuất thất bại");
-              }
-            } catch (error) {
-              alert("Lỗi khi đăng xuất");
-              console.error(error);
-            }
-          });
-        } else {
-          document.getElementById("login-btn").style.display = "inline-block";
-          document.getElementById("register-btn").style.display = "inline-block";
-          document.getElementById("logout-btn").style.display = "none";
+        // Hiển thị nút Lịch sử đặt tour khi đã đăng nhập
+        const bookingHistoryBtn = document.getElementById("booking-history-btn");
+        if (bookingHistoryBtn) {
+          bookingHistoryBtn.style.display = "inline-block";
         }
+
+        logoutBtn.addEventListener("click", async (e) => {
+          e.preventDefault();
+          try {
+            const res = await fetch("/account/logout");
+            if (!res.ok) throw new Error("Lỗi khi đăng xuất");
+            const data = await res.json();
+            if (data.success) {
+              alert("Đăng xuất thành công");
+              window.location.reload();
+            } else {
+              alert("Đăng xuất thất bại");
+            }
+          } catch (error) {
+            alert("Lỗi khi đăng xuất");
+            console.error(error);
+          }
+        });
+      } else {
+        document.getElementById("login-btn").style.display = "inline-block";
+        document.getElementById("register-btn").style.display = "inline-block";
+        document.getElementById("logout-btn").style.display = "none";
+
+        // Ẩn nút Lịch sử đặt tour khi chưa đăng nhập
+        const bookingHistoryBtn = document.getElementById("booking-history-btn");
+        if (bookingHistoryBtn) {
+          bookingHistoryBtn.style.display = "none";
+        }
+      }
       });
     </script>
     <!-- Hero Section -->

@@ -83,6 +83,20 @@ router.get("/booking", checkCustomerLogin, (req, res) => {
   res.sendFile(filePath);
 });
 
+// Thêm route dẫn đến trang lịch sử đơn đặt cho khách hàng
+router.get("/booking-history", checkCustomerLogin, (req, res) => {
+  const filePath = path.join(
+    __dirname,
+    "..",
+    "..",
+    "app",
+    "views",
+    "home",
+    "booking-history.html"
+  );
+  res.sendFile(filePath);
+});
+
 // Nếu bạn dùng EJS, có thể render từ views
 router.get("/tour", (req, res) => {
   res.render("home/tour"); // Render views/home/tour.ejs nếu bạn đang dùng EJS
@@ -253,6 +267,7 @@ router.get("/payment-page", (req, res) => {
   );
   res.sendFile(filePath);
 });
+
 
 router.post("/thanh-toan", async (req, res) => {
   try {

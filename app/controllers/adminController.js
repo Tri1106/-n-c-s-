@@ -28,6 +28,86 @@ router.get("/admin-dashboard", async (req, res) => {
   }
 });
 
+// API lấy danh sách booking cho admin quản lý đơn đặt tour
+router.get("/admin/bookings", async (req, res) => {
+  if (!req.session.user || req.session.user.role !== "admin") {
+    return res.status(403).json({ error: "Không có quyền truy cập" });
+  }
+  try {
+    const pool = await db.connect();
+    const result = await pool.request().query(`
+      SELECT b.BookingID, b.BookingDate, b.TourID, b.CustomerID,
+             c.Name AS CustomerName,
+             t.TourName,
+             p.PaymentStatus
+      FROM Bookings b
+      JOIN Customers c ON b.CustomerID = c.CustomerID
+      JOIN Tours t ON b.TourID = t.TourID
+      LEFT JOIN Payments p ON b.BookingID = p.BookingID
+      ORDER BY b.BookingDate DESC
+    `);
+    res.json(result.recordset);
+  } catch (err) {
+    console.error("Lỗi lấy danh sách booking:", err);
+    res.status(500).json({ error: "Lỗi server" });
+  }
+});
+
+// API admin xác nhận thanh toán cho booking
+router.post("/admin/bookings/:bookingID/confirm", async (req, res) => {
+  if (!req.session.user || req.session.user.role !== "admin") {
+    return res.status(403).json({ error: "Không có quyền truy cập" });
+  }
+  const bookingID = req.params.bookingID;
+  try {
+    const pool = await db.connect();
+
+    // Lấy thông tin số tiền thanh toán từ bảng Bookings hoặc bảng liên quan
+    const bookingResult = await pool.request()
+      .input("BookingID", db.sql.VarChar, bookingID)
+      .query("SELECT BookingID, TourID FROM Bookings WHERE BookingID = @BookingID");
+
+    if (bookingResult.recordset.length === 0) {
+      return res.status(404).json({ success: false, message: "Không tìm thấy booking" });
+    }
+
+    const booking = bookingResult.recordset[0];
+
+    // Giả sử lấy số tiền từ bảng Tours theo TourID
+    const tourResult = await pool.request()
+      .input("TourID", db.sql.VarChar, booking.TourID)
+      .query("SELECT Price FROM Tours WHERE TourID = @TourID");
+
+    if (tourResult.recordset.length === 0) {
+      return res.status(404).json({ success: false, message: "Không tìm thấy tour" });
+    }
+
+    const amount = tourResult.recordset[0].Price;
+
+    // Thêm bản ghi vào bảng Payments
+    await pool.request()
+      .input("BookingID", db.sql.VarChar, bookingID)
+      .input("Amount", db.sql.Decimal, amount)
+      .input("PaymentStatus", db.sql.NVarChar, "Completed")
+      .query(`
+        INSERT INTO Payments (BookingID, Amount, PaymentStatus)
+        VALUES (@BookingID, @Amount, @PaymentStatus)
+      `);
+
+    // Cập nhật trạng thái booking thành "Đã thanh toán"
+    await pool.request()
+      .input("BookingID", db.sql.VarChar, bookingID)
+      .query("UPDATE Bookings SET Status = 'Đã thanh toán' WHERE BookingID = @BookingID");
+
+    // TODO: Gửi thông báo cho khách hàng (có thể qua email hoặc cập nhật trạng thái)
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Lỗi xác nhận thanh toán:", err);
+    res.status(500).json({ success: false, message: "Lỗi server" });
+  }
+});
+
 // Route đăng ký nhà cung cấp
 router.post("/register-provider", async (req, res) => {
   const { fullName, email, password, phone } = req.body;
@@ -173,4 +253,90 @@ router.get("/tours/data", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+router.put('/tours/:tourName', async (req, res) => {
+  if (!req.session.user || req.session.user.role !== 'admin') {
+    return res.status(403).json({ success: false, message: 'Không có quyền truy cập' });
+  }
+  const tourName = req.params.tourName;
+  const { TourName, Destination, Price, ImageURL, SoCho } = req.body;
+  try {
+    const pool = await db.connect();
+    const result = await pool.request()
+      .input('TourName', db.sql.NVarChar, TourName)
+      .input('Destination', db.sql.NVarChar, Destination)
+      .input('Price', db.sql.Decimal, Price)
+      .input('ImageURL', db.sql.NVarChar, ImageURL)
+      .input('SoCho', db.sql.Int, SoCho)
+      .input('OldTourName', db.sql.NVarChar, tourName)
+      .query(`
+        UPDATE Tours
+        SET TourName = @TourName,
+            Destination = @Destination,
+            Price = @Price,
+            ImageURL = @ImageURL,
+            SoCho = @SoCho
+        WHERE TourName = @OldTourName
+      `);
+    if (result.rowsAffected[0] === 0) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy tour' });
+    }
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Lỗi cập nhật tour:', err);
+    res.status(500).json({ success: false, message: 'Lỗi server' });
+  }
+});
+
+router.delete('/tours/:tourName', async (req, res) => {
+  if (!req.session.user || req.session.user.role !== 'admin') {
+    return res.status(403).json({ success: false, message: 'Không có quyền truy cập' });
+  }
+  const tourName = req.params.tourName;
+  try {
+    const pool = await db.connect();
+
+    // Lấy TourID theo TourName
+    const tourResult = await pool.request()
+      .input('TourName', db.sql.NVarChar, tourName)
+      .query('SELECT TourID FROM Tours WHERE TourName = @TourName');
+
+    if (tourResult.recordset.length === 0) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy tour' });
+    }
+
+    const tourID = tourResult.recordset[0].TourID;
+
+    // Xóa các lịch trình liên quan trong bảng Itineraries
+    await pool.request()
+      .input('TourID', db.sql.VarChar, tourID)
+      .query('DELETE FROM Itineraries WHERE TourID = @TourID');
+
+    // Xóa tour
+    const result = await pool.request()
+      .input('TourName', db.sql.NVarChar, tourName)
+      .query('DELETE FROM Tours WHERE TourName = @TourName');
+
+    if (result.rowsAffected[0] === 0) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy tour' });
+    }
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Lỗi xóa tour:', err);
+    res.status(500).json({ success: false, message: 'Lỗi server' });
+  }
+});
+
+router.get("/admin-bookings.html", (req, res) => {
+  const filePath = path.join(
+    __dirname,
+    "..",
+    "..",
+    "app",
+    "views",
+    "home",
+    "admin-bookings.html"
+  );
+  res.sendFile(filePath);
+});
+
 module.exports = router;

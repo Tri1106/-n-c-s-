@@ -173,7 +173,7 @@
             <li>Xem tất cả đơn đặt của hệ thống</li>
             <li>Xử lý hoàn tiền, khiếu nại</li>
           </ul>
-          <button class="btn">Quản lý đơn</button>
+          <button class="btn" id="manageBookingsBtn">Quản lý đơn</button>
         </div>
       </section>
     </main>
@@ -217,6 +217,11 @@
             submitButton.disabled = false; // Enable lại nút submit sau khi hoàn thành
           }
         });
+
+      // Thêm sự kiện cho nút Quản lý đơn
+      document.getElementById("manageBookingsBtn").addEventListener("click", () => {
+        window.location.href = "/admin-bookings.html";
+      });
     </script>
   </body>
 </html>

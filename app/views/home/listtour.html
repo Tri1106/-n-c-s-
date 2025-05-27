@@ -2,7 +2,7 @@
 <html lang="vi">
   <head>
     <meta charset="UTF-8" />
-    <title>Quản lý tài khoản</title>
+    <title>Quản lý tour</title>
     <style>
       body {
         font-family: Arial, sans-serif;
@@ -70,6 +70,7 @@
         cursor: pointer;
         font-weight: bold;
         color: white;
+        margin: 0 5px;
       }
       .edit-btn {
         background-color: #27ae60;
@@ -77,18 +78,56 @@
       .delete-btn {
         background-color: #c0392b;
       }
+      #editFormContainer {
+        display: none;
+        margin-top: 20px;
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+      #editFormContainer label {
+        display: block;
+        margin-bottom: 10px;
+      }
+      #editFormContainer input {
+        width: 100%;
+        padding: 8px;
+        margin-top: 5px;
+        box-sizing: border-box;
+      }
+      #editFormContainer button {
+        margin-top: 10px;
+        padding: 10px 15px;
+        font-weight: bold;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+      #editFormContainer .save-btn {
+        background-color: #27ae60;
+        color: white;
+        margin-right: 10px;
+      }
+      #editFormContainer .cancel-btn {
+        background-color: #c0392b;
+        color: white;
+      }
     </style>
   </head>
   <body>
     <header>
-      <h1>Quản trị viên - Quản lý tài khoản</h1>
+      <h1>Quản trị viên - Quản lý tour</h1>
       <nav>
         <ul>
-          <li>👥 Quản lý tài khoản</li>
-          <li>📄 Quản lý tour</li>
-          <li>💵 Doanh thu</li>
-          <li>📊 Thống kê</li>
-          <li>🧾 Quản lý đơn đặt</li>
+          <li><a href="/user">👥 Quản lý tài khoản</a></li>
+          <li><a href="/tours">📄 Quản lý tour</a></li>
+          <li><a href="#">💵 Doanh thu</a></li>
+          <li><a href="#">📊 Thống kê</a></li>
+          <li><a href="/admin-bookings.html">🧾 Quản lý đơn đặt</a></li>
           <li><a href="/admin-dashboard">Quay Lại</a></li>
         </ul>
       </nav>
@@ -103,50 +142,141 @@
             <th>Điểm Đến</th>
             <th>Giá Tour</th>
             <th>Hình Ảnh</th>
-            <th>Số chổ</th>
+            <th>Số chỗ</th>
             <th>Hành Động</th>
           </tr>
         </thead>
-        <tbody id="userTableBody">
-          <!-- Dữ liệu người dùng sẽ được thêm vào đây thông qua JavaScript -->
+        <tbody id="tourTableBody">
+          <!-- Dữ liệu tour sẽ được thêm vào đây thông qua JavaScript -->
         </tbody>
       </table>
-      <div id="editFormContainer" style="display: none; margin-top: 20px">
-        <h3>Sửa thông tin người dùng</h3>
-        <form id="editUserForm">
-          <input type="hidden" id="editUserID" />
-          <label>Email: <input type="email" id="editEmail" required /></label
-          ><br />
-          <label>Phone: <input type="text" id="editPhone" required /></label
-          ><br />
-          <label
-            >Full Name: <input type="text" id="editFullName" required /></label
-          ><br />
-          <button type="submit">Lưu thay đổi</button>
-          <button type="button" onclick="hideEditForm()">Hủy</button>
+
+      <div id="editFormContainer">
+        <h3>Sửa thông tin Tour</h3>
+        <form id="editTourForm">
+          <input type="hidden" id="editTourID" />
+          <label>
+            Tên Tour:
+            <input type="text" id="editTourName" required />
+          </label>
+          <label>
+            Điểm Đến:
+            <input type="text" id="editDestination" required />
+          </label>
+          <label>
+            Giá Tour:
+            <input type="number" id="editPrice" required />
+          </label>
+          <label>
+            Hình Ảnh (URL):
+            <input type="text" id="editImageURL" required />
+          </label>
+          <label>
+            Số chỗ:
+            <input type="number" id="editSeats" required />
+          </label>
+          <button type="submit" class="save-btn">Lưu thay đổi</button>
+          <button type="button" class="cancel-btn" onclick="hideEditForm()">Hủy</button>
         </form>
       </div>
-      <script>
-        fetch("/tours/data")
-          .then((response) => response.json())
-          .then((tours) => {
-            const tableBody = document.getElementById("tourList");
-            tours.forEach((tour) => {
-              const row = document.createElement("tr");
-              row.innerHTML = `
-                <td>${tour.TourName}</td>
-                <td>${tour.Destination}</td>
-                <td>${tour.Price}</td>
-                <td><img src="${tour.ImageURL}" alt="Tour Image" width="100"/></td>
-                <td>${tour.SoCho}</td>
-              `;
-              tableBody.appendChild(row);
-            });
-          })
-          .catch((error) => {
-            console.error("❌ Lỗi khi lấy danh sách tours:", error);
-          });
-      </script>
     </main>
+
+    <script>
+      async function fetchTours() {
+        try {
+          const response = await fetch('/tours/data');
+          const tours = await response.json();
+          const tbody = document.getElementById('tourTableBody');
+          tbody.innerHTML = '';
+
+          tours.forEach(tour => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td>${tour.TourName}</td>
+              <td>${tour.Destination}</td>
+              <td>${tour.Price}</td>
+              <td><img src="${tour.ImageURL}" alt="Tour Image" width="100"/></td>
+              <td>${tour.SoCho}</td>
+              <td class="action-buttons">
+                <button class="edit-btn" onclick="showEditForm('${tour.TourName}', '${tour.Destination}', ${tour.Price}, '${tour.ImageURL}', ${tour.SoCho})">Sửa</button>
+                <button class="delete-btn" onclick="deleteTour('${tour.TourName}')">Xóa</button>
+              </td>
+            `;
+            tbody.appendChild(tr);
+          });
+        } catch (error) {
+          console.error('❌ Lỗi khi lấy danh sách tours:', error);
+        }
+      }
+
+      function showEditForm(tourName, destination, price, imageURL, seats) {
+        document.getElementById('editTourID').value = tourName;
+        document.getElementById('editTourName').value = tourName;
+        document.getElementById('editDestination').value = destination;
+        document.getElementById('editPrice').value = price;
+        document.getElementById('editImageURL').value = imageURL;
+        document.getElementById('editSeats').value = seats;
+        document.getElementById('editFormContainer').style.display = 'block';
+      }
+
+      function hideEditForm() {
+        document.getElementById('editFormContainer').style.display = 'none';
+      }
+
+      document.getElementById('editTourForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const tourID = document.getElementById('editTourID').value;
+        const updatedTour = {
+          TourName: document.getElementById('editTourName').value,
+          Destination: document.getElementById('editDestination').value,
+          Price: parseFloat(document.getElementById('editPrice').value),
+          ImageURL: document.getElementById('editImageURL').value,
+          SoCho: parseInt(document.getElementById('editSeats').value),
+        };
+
+        try {
+          const response = await fetch(`/tours/${encodeURIComponent(tourID)}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(updatedTour),
+          });
+          const result = await response.json();
+          if (result.success) {
+            alert('Cập nhật tour thành công!');
+            hideEditForm();
+            fetchTours();
+          } else {
+            alert('Cập nhật tour thất bại: ' + result.message);
+          }
+        } catch (error) {
+          alert('Lỗi khi cập nhật tour.');
+          console.error(error);
+        }
+      });
+
+      async function deleteTour(tourName) {
+        if (!confirm('Bạn có chắc muốn xóa tour này?')) return;
+
+        try {
+          const response = await fetch(`/tours/${encodeURIComponent(tourName)}`, {
+            method: 'DELETE',
+          });
+          const result = await response.json();
+          if (result.success) {
+            alert('Xóa tour thành công!');
+            fetchTours();
+          } else {
+            alert('Xóa tour thất bại: ' + result.message);
+          }
+        } catch (error) {
+          alert('Lỗi khi xóa tour.');
+          console.error(error);
+        }
+      }
+
+      fetchTours();
+    </script>
   </body>
 </html>

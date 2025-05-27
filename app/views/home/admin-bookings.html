@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>Quản lý đơn đặt tour</title>
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background: #f5f7fa;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background-color: #2c3e50;
+      color: white;
+      padding: 1rem 2rem;
+      text-align: center;
+    }
+    nav {
+      background-color: #34495e;
+      padding: 1rem;
+    }
+    nav a {
+      color: white;
+      text-decoration: none;
+      margin-right: 1.5rem;
+      font-weight: bold;
+    }
+    nav a:hover {
+      text-decoration: underline;
+    }
+    main {
+      max-width: 1100px;
+      margin: 2rem auto;
+      padding: 2rem;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      color: rgb(253, 253, 253)0;
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      margin-top: 20px;
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    h2 {
+        text-align: center;
+        color: #2c3e50;
+      }
+    th, td {
+      padding: 12px 15px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+    }
+    th {
+      background-color: #2980b9;
+      color: white;
+      border-bottom: none;
+    }
+    th:first-child {
+      border-radius: 12px 0 0 12px;
+    }
+    th:last-child {
+      border-radius: 0 12px 12px 0;
+    }
+    tr:last-child td {
+      border-bottom: none;
+    }
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+    button {
+      background-color: #27ae60;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-right: 5px;
+      font-weight: bold;
+    }
+    button:disabled {
+      background-color: #95a5a6;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Quản trị viên - Quản lý đơn đặt</h1>
+  </header>
+  <nav>
+    <a href="/user">👥 Quản lý tài khoản</a>
+    <a href="/tours">📋 Quản lý tour</a>
+    <a href="#">💵 Doanh thu</a>
+    <a href="#">📊 Thống kê</a>
+    <a href="/admin-bookings.html">🧾 Quản lý đơn đặt</a>
+    <a href="/home">Đăng xuất</a>
+    <a href="/admin-dashboard">Quay Lại</a>
+  </nav>
+  <main>
+    <h2>Danh sách đơn đặt tour</h2>
+    <table id="bookingTable">
+      <thead>
+        <tr>
+          <th>Mã đặt chỗ</th>
+          <th>Khách hàng</th>
+          <th>Tour</th>
+          <th>Ngày đặt</th>
+          <th>Trạng thái</th>
+          <th>Hành động</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Dữ liệu sẽ được load bằng JS -->
+      </tbody>
+    </table>
+  </main>
+  <script>
+    async function fetchBookings() {
+      try {
+        const response = await fetch('/admin/bookings');
+        const bookings = await response.json();
+        const tbody = document.querySelector('#bookingTable tbody');
+        tbody.innerHTML = '';
+
+        bookings.forEach(booking => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${booking.BookingID}</td>
+            <td>${booking.CustomerName}</td>
+            <td>${booking.TourName}</td>
+            <td>${new Date(booking.BookingDate).toLocaleDateString()}</td>
+            <td>${booking.Status || 'Chưa thanh toán'}</td>
+            <td>
+              <button ${booking.Status === 'Đã thanh toán' ? 'disabled' : ''} onclick="confirmPayment('${booking.BookingID}')">Xác nhận thanh toán</button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (error) {
+        alert('Lỗi khi tải danh sách đơn đặt.');
+        console.error(error);
+      }
+    }
+
+    async function confirmPayment(bookingID) {
+      if (!confirm('Bạn có chắc muốn xác nhận thanh toán cho đơn đặt này?')) return;
+
+      try {
+        const response = await fetch(`/admin/bookings/${bookingID}/confirm`, {
+          method: 'POST',
+        });
+        const result = await response.json();
+        if (result.success) {
+          alert('Xác nhận thanh toán thành công!');
+          fetchBookings();
+        } else {
+          alert('Xác nhận thất bại: ' + result.message);
+        }
+      } catch (error) {
+        alert('Lỗi khi xác nhận thanh toán.');
+        console.error(error);
+      }
+    }
+
+    fetchBookings();
+  </script>
+</body>
+</html>
