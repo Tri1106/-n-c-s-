@@ -165,15 +165,105 @@
       </div>
     </section>
 
-    <!-- Lịch trình Section -->
-    <section id="itinerary" style="margin-top: 40px">
-      <h2 style="text-align: center; font-weight: bold; margin-bottom: 20px">
-        LỊCH TRÌNH
-      </h2>
-      <div id="itinerary-list" style="max-width: 800px; margin: 0 auto">
-        <!-- Các ngày lịch trình sẽ được chèn vào đây -->
-      </div>
-    </section>
+    <div style="display: flex; gap: 40px; margin-top: 40px; max-width: 900px; margin-left: auto; margin-right: auto; justify-content: center; align-items: flex-start;">
+      <!-- Lịch trình Section -->
+      <section id="itinerary" style="flex: 1; max-width: 400px;">
+        <h2 style="text-align: center; font-weight: bold; margin-bottom: 20px">
+          LỊCH TRÌNH
+        </h2>
+        <div id="itinerary-list" style="max-width: 100%; margin: 0 auto">
+          <!-- Các ngày lịch trình sẽ được chèn vào đây -->
+        </div>
+      </section>
+
+      <!-- Đánh giá tour -->
+      <section id="review-section" style="flex: 1; max-width: 400px;">
+        <h2 style="text-align: center; font-weight: bold; margin-bottom: 20px">
+          ĐÁNH GIÁ TOUR
+        </h2>
+    <div id="review-list">
+      <!-- Danh sách đánh giá sẽ được hiển thị ở đây -->
+      <p>Đang tải đánh giá...</p>
+    </div>
+
+    <script>
+      async function loadReviews() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const tourId = urlParams.get('tourId');
+        if (!tourId) {
+          document.getElementById('review-list').innerHTML = '<p>Không tìm thấy mã tour để tải đánh giá.</p>';
+          return;
+        }
+        try {
+          const response = await fetch(`/api/reviews/${tourId}`);
+          if (!response.ok) {
+            document.getElementById('review-list').innerHTML = '<p>Lỗi khi tải đánh giá.</p>';
+            return;
+          }
+          const reviews = await response.json();
+          if (reviews.length === 0) {
+            document.getElementById('review-list').innerHTML = '<p>Chưa có đánh giá nào.</p>';
+            return;
+          }
+          const reviewHtml = reviews.map(r => `
+            <div style="border-bottom: 1px solid #ccc; padding: 10px 0;">
+              <strong>${r.CustomerName}</strong> - <em>${new Date(r.CreatedAt).toLocaleDateString('vi-VN')}</em><br/>
+              Đánh giá: ${r.Rating} sao<br/>
+              Bình luận: ${r.Comment || 'Không có bình luận'}
+            </div>
+          `).join('');
+          document.getElementById('review-list').innerHTML = reviewHtml;
+        } catch (error) {
+          document.getElementById('review-list').innerHTML = '<p>Lỗi khi tải đánh giá.</p>';
+        }
+      }
+      window.onload = () => {
+        loadTourDetails();
+        loadReviews();
+      };
+    </script>
+      </section>
+    </div>
+
+    <script>
+      document.getElementById('review-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const rating = document.getElementById('rating').value;
+        const comment = document.getElementById('comment').value;
+        const urlParams = new URLSearchParams(window.location.search);
+        const tourId = urlParams.get('tourId');
+
+        // TODO: You need to get bookingID from user session or context
+        // For now, we will alert user to provide bookingID or implement logic to get it
+        const bookingID = null; // Placeholder
+
+        if (!bookingID) {
+          document.getElementById('review-message').style.color = 'red';
+          document.getElementById('review-message').textContent = 'Không tìm thấy mã đặt chỗ để đánh giá.';
+          return;
+        }
+
+        try {
+          const response = await fetch('/user/review', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ bookingID, rating, comment })
+          });
+          const data = await response.json();
+          if (response.ok) {
+            document.getElementById('review-message').style.color = 'green';
+            document.getElementById('review-message').textContent = data.message;
+            this.reset();
+          } else {
+            document.getElementById('review-message').style.color = 'red';
+            document.getElementById('review-message').textContent = data.error || 'Lỗi khi gửi đánh giá.';
+          }
+        } catch (error) {
+          document.getElementById('review-message').style.color = 'red';
+          document.getElementById('review-message').textContent = 'Lỗi khi gửi đánh giá.';
+        }
+      });
+    </script>
 
     <style>
       .itinerary-day {

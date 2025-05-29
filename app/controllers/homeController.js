@@ -271,7 +271,7 @@ router.get("/payment-page", (req, res) => {
 
 router.post("/thanh-toan", async (req, res) => {
   try {
-    const { name, email, phone, address, tourID, bookingCode, amount } = req.body;
+    const { name, email, phone, address, tourID, bookingCode, amount, adults, children } = req.body;
 
     const pool = await connect();
 
@@ -308,6 +308,19 @@ router.post("/thanh-toan", async (req, res) => {
             VALUES (@BookingID, @CustomerID_param, @TourID, @BookingDate)
           `);
 
+        // Trừ số chỗ trong Tours dựa trên số người lớn và trẻ em
+        const totalPeople = (parseInt(adults) || 0) + (parseInt(children) || 0);
+        if (totalPeople > 0) {
+          await request
+            .input("TourID_param", sql.VarChar, tourID)
+            .input("SeatsToReduce", sql.Int, totalPeople)
+            .query(`
+              UPDATE Tours
+              SET SoCho = CASE WHEN SoCho >= @SeatsToReduce THEN SoCho - @SeatsToReduce ELSE 0 END
+              WHERE TourID = @TourID_param
+            `);
+        }
+
         await transaction.commit();
 
         res.json({
@@ -321,8 +334,6 @@ router.post("/thanh-toan", async (req, res) => {
         throw err;
       }
     } else if (bookingCode && amount) {
-      // Xử lý thanh toán cho booking hiện có
-      // Cập nhật trạng thái thanh toán, số tiền đã thanh toán trong bảng Bookings
       await pool.request()
         .input("BookingID", sql.VarChar, bookingCode)
         .input("Amount", sql.Decimal, amount)
@@ -380,6 +391,110 @@ router.get("/api/bookings/:bookingID", async (req, res) => {
   } catch (err) {
     console.error("Lỗi khi lấy thông tin booking:", err);
     res.status(500).json({ error: "Lỗi server khi lấy thông tin booking." });
+  }
+});
+
+router.get("/user/bookings", checkCustomerLogin, async (req, res) => {
+  try {
+    const pool = await connect();
+    const userId = req.session.user.id;
+
+    // Lấy danh sách booking của user
+    const result = await pool
+      .request()
+      .input("userId", userId)
+      .query(`
+        SELECT b.BookingID, t.TourName, b.BookingDate, 
+               ISNULL(p.PaymentStatus, 'Chưa thanh toán') AS PaymentStatus
+        FROM Bookings b
+        JOIN Customers c ON b.CustomerID = c.CustomerID
+        JOIN Tours t ON b.TourID = t.TourID
+        LEFT JOIN Payments p ON b.BookingID = p.BookingID
+        WHERE c.UserID = @userId
+        ORDER BY b.BookingDate DESC
+      `);
+
+    res.json(result.recordset);
+  } catch (err) {
+    console.error("Lỗi khi lấy lịch sử đơn đặt:", err);
+    res.status(500).json({ error: "Lỗi server khi lấy lịch sử đơn đặt." });
+  }
+});
+
+router.post("/user/review", checkCustomerLogin, async (req, res) => {
+  try {
+    const { bookingID, rating, comment } = req.body;
+    const userId = req.session.user.id;
+
+    if (!bookingID || !rating) {
+      return res.status(400).json({ error: "Thiếu thông tin bắt buộc." });
+    }
+
+    const pool = await connect();
+
+    // Kiểm tra ngày kết thúc tour (giả sử có trường EndDate trong bảng Tours)
+    const checkTourQuery = `
+      SELECT t.TourID, t.TourName, b.BookingDate, DATEADD(day, DATEDIFF(day, 0, t.Duration), b.BookingDate) AS EndDate
+      FROM Bookings b
+      JOIN Tours t ON b.TourID = t.TourID
+      WHERE b.BookingID = @bookingID AND b.CustomerID = (
+        SELECT CustomerID FROM Customers WHERE UserID = @userId
+      )
+    `;
+
+    const tourResult = await pool.request()
+      .input("bookingID", bookingID)
+      .input("userId", userId)
+      .query(checkTourQuery);
+
+    if (tourResult.recordset.length === 0) {
+      return res.status(404).json({ error: "Không tìm thấy đơn đặt hoặc không có quyền đánh giá." });
+    }
+
+    const endDate = tourResult.recordset[0].EndDate;
+    const now = new Date();
+
+    if (now < endDate) {
+      return res.status(400).json({ error: "Chưa đến thời điểm đánh giá tour." });
+    }
+
+    // Thêm đánh giá vào bảng Reviews
+    const insertReviewQuery = `
+      INSERT INTO Reviews (ReviewID, CustomerID, TourID, Rating, Comment, CreatedAt)
+      VALUES (NEWID(), (SELECT CustomerID FROM Customers WHERE UserID = @userId), @tourID, @rating, @comment, GETDATE())
+    `;
+
+    await pool.request()
+      .input("userId", userId)
+      .input("tourID", tourResult.recordset[0].TourID)
+      .input("rating", rating)
+      .input("comment", comment || null)
+      .query(insertReviewQuery);
+
+    res.json({ message: "Đánh giá đã được lưu thành công." });
+  } catch (err) {
+    console.error("Lỗi khi lưu đánh giá:", err);
+    res.status(500).json({ error: "Lỗi server khi lưu đánh giá." });
+  }
+});
+
+router.get("/api/reviews/:tourID", async (req, res) => {
+  const tourID = req.params.tourID;
+  try {
+    const pool = await connect();
+    const result = await pool.request()
+      .input("tourID", tourID)
+      .query(`
+        SELECT r.Rating, r.Comment, r.CreatedAt, c.Name AS CustomerName
+        FROM Reviews r
+        JOIN Customers c ON r.CustomerID = c.CustomerID
+        WHERE r.TourID = @tourID
+        ORDER BY r.CreatedAt DESC
+      `);
+    res.json(result.recordset);
+  } catch (err) {
+    console.error("Lỗi khi lấy đánh giá:", err);
+    res.status(500).json({ error: "Lỗi server khi lấy đánh giá." });
   }
 });
 
