@@ -175,6 +175,10 @@
             Số chỗ:
             <input type="number" id="editSeats" required />
           </label>
+          <label>
+            <input type="checkbox" id="editIsFeatured" />
+            Ưu thích
+          </label>
           <button type="submit" class="save-btn">Lưu thay đổi</button>
           <button type="button" class="cancel-btn" onclick="hideEditForm()">Hủy</button>
         </form>
@@ -189,21 +193,22 @@
           const tbody = document.getElementById('tourTableBody');
           tbody.innerHTML = '';
 
-          tours.forEach(tour => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-              <td>${tour.TourName}</td>
-              <td>${tour.Destination}</td>
-              <td>${tour.Price}</td>
-              <td><img src="${tour.ImageURL}" alt="Tour Image" width="100"/></td>
-              <td>${tour.SoCho}</td>
-              <td class="action-buttons">
-                <button class="edit-btn" onclick="showEditForm('${tour.TourName}', '${tour.Destination}', ${tour.Price}, '${tour.ImageURL}', ${tour.SoCho})">Sửa</button>
-                <button class="delete-btn" onclick="deleteTour('${tour.TourName}')">Xóa</button>
-              </td>
-            `;
-            tbody.appendChild(tr);
-          });
+      tours.forEach(tour => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${tour.TourName}</td>
+          <td>${tour.Destination}</td>
+          <td>${tour.Price}</td>
+          <td><img src="${tour.ImageURL}" alt="Tour Image" width="100"/></td>
+          <td>${tour.SoCho}</td>
+          <td>${tour.IsFeatured ? 'Có' : 'Không'}</td>
+          <td class="action-buttons">
+            <button class="edit-btn" onclick="showEditForm('${tour.TourName}', '${tour.Destination}', ${tour.Price}, '${tour.ImageURL}', ${tour.SoCho}, ${tour.IsFeatured})">Sửa</button>
+            <button class="delete-btn" onclick="deleteTour('${tour.TourName}')">Xóa</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
         } catch (error) {
           console.error('❌ Lỗi khi lấy danh sách tours:', error);
         }
@@ -216,6 +221,7 @@
         document.getElementById('editPrice').value = price;
         document.getElementById('editImageURL').value = imageURL;
         document.getElementById('editSeats').value = seats;
+        document.getElementById('editIsFeatured').checked = arguments[5] || false;
         document.getElementById('editFormContainer').style.display = 'block';
       }
 
@@ -232,6 +238,7 @@
           Price: parseFloat(document.getElementById('editPrice').value),
           ImageURL: document.getElementById('editImageURL').value,
           SoCho: parseInt(document.getElementById('editSeats').value),
+          IsFeatured: document.getElementById('editIsFeatured').checked ? 1 : 0,
         };
 
         try {

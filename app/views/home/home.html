@@ -493,67 +493,47 @@
           </div>
         </div>
       </div>
-    </section>
+  </section>
 
     <!-- Popular Destinations -->
 <section class="section popular-destinations">
   <h2>Điểm Đến Được Ưa Thích</h2>
   <h4>Hãy tận hưởng trải nghiệm du lịch chuyên nghiệp, mang lại cho bạn những khoảnh khắc tuyệt vời và nâng tầm cuộc sống. Chúng tôi cam kết mang đến những chuyến đi đáng nhớ, giúp bạn khám phá thế giới theo cách hoàn hảo nhất.</h4>
-  <div class="destination-grid">
-    <div class="destination-card">
-      <div class="destination-image" style="background-image: url('https://hoanghamobile.com/tin-tuc/wp-content/uploads/2024/04/anh-ha-noi.jpg);"></div>
-      <div class="destination-info">
-        <h3>Hà Nội</h3>
-        <p>Khám phá vẻ đẹp của thủ đô với nhiều di tích lịch sử và văn hóa.</p>
-        <a href="tour-detail.html" class="book-btn">Xem Chi Tiết</a>
-      </div>
-    </div>
-
-    <div class="destination-card">
-      <div class="destination-image" style="background-image: url('https://cdn.pixabay.com/photo/2019/01/02/07/22/beauty-3908224_1280.jpg);"></div>
-      <div class="destination-info">
-        <h3>TP. Hồ Chí Minh</h3>
-        <p>Trải nghiệm sự nhộn nhịp của thành phố lớn nhất Việt Nam.</p>
-        <a href="tour-detail.html" class="book-btn">Xem Chi Tiết</a>
-      </div>
-    </div>
-
-    <div class="destination-card">
-      <div class="destination-image" style="background-image: url('https://media-cdn-v2.laodong.vn/Storage/NewsPortal/2023/3/9/1155741/Noimage4.jpg');"></div>
-      <div class="destination-info">
-        <h3>Hạ Long</h3>
-        <p>Thưởng thức vẻ đẹp của vịnh Hạ Long với những hòn đảo tuyệt đẹp.</p>
-        <a href="tour-detail.html" class="book-btn">Xem Chi Tiết</a>
-      </div>
-    </div>
-
-    <div class="destination-card">
-      <div class="destination-image" style="background-image: url('https://file.vfo.vn/hinh/2016/08/tong-hop-nhung-hinh-anh-dep-ve-da-nang-1.jpg');"></div>
-      <div class="destination-info">
-        <h3>Đà Nẵng</h3>
-        <p>Thành phố biển xinh đẹp với Cầu Rồng và bãi biển Mỹ Khê nổi tiếng.</p>
-        <a href="tour-detail.html" class="book-btn">Xem Chi Tiết</a>
-      </div>
-    </div>
-
-    <div class="destination-card">
-      <div class="destination-image" style="background-image: url('https://i2.ex-cdn.com/crystalbay.com/files/content/2024/06/03/du-lich-hoi-an-1-1542.jpg');"></div>
-      <div class="destination-info">
-        <h3>Hội An</h3>
-        <p>Phố cổ yên bình với những chiếc đèn lồng rực rỡ và kiến trúc xưa.</p>
-        <a href="tour-detail.html" class="book-btn">Xem Chi Tiết</a>
-      </div>
-    </div>
-
-    <div class="destination-card">
-      <div class="destination-image" style="background-image: url('https://baokhanhhoa.vn/file/e7837c02857c8ca30185a8c39b582c03/102023/nh3_20231020164026.jpg');"></div>
-      <div class="destination-info">
-        <h3>Nha Trang</h3>
-        <p>Nha Trang được mệnh danh là hòn ngọc của biển Đông, Viên ngọc xanh vì giá trị thiên nhiên, sắc đẹp cũng như khí hậu của nó.</p>
-        <a href="tour-detail.html" class="book-btn">Xem Chi Tiết</a>
-      </div>
-    </div>
+  <div class="tours-grid" id="popularDestinations">
+    <!-- Dữ liệu điểm đến được load động ở đây -->
   </div>
+  
+  <script>
+    async function loadPopularDestinations() {
+      try {
+        const response = await fetch('/api/popular-tours');
+        if (!response.ok) {
+          document.getElementById('popularDestinations').innerHTML = '<p>Không thể tải điểm đến.</p>';
+          return;
+        }
+        const tours = await response.json();
+        if (tours.length === 0) {
+          document.getElementById('popularDestinations').innerHTML = '<p>Chưa có điểm đến ưu thích.</p>';
+          return;
+        }
+        const html = tours.map(tour => `
+          <div class="tour-card">
+            <div class="tour-img" style="background-image: url('${tour.ImageURL}');"></div>
+            <div class="tour-info">
+              <h3>${tour.Destination}</h3>
+              <p>${tour.TourName}</p>
+          <span class="tour-price">Giá: ${tour.Price.toLocaleString('vi-VN')} ₫</span>
+              <a href="/tour-detail?tourId=${tour.TourID}" class="book-btn">Xem Chi Tiết</a>
+            </div>
+          </div>
+        `).join('');
+        document.getElementById('popularDestinations').innerHTML = html;
+      } catch (error) {
+        document.getElementById('popularDestinations').innerHTML = '<p>Lỗi khi tải điểm đến.</p>';
+      }
+    }
+    document.addEventListener('DOMContentLoaded', loadPopularDestinations);
+  </script>
 </section>
 
 

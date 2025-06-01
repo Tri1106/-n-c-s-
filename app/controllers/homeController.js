@@ -151,7 +151,7 @@ router.get("/api/tours", async (req, res) => {
     const result = await pool
       .request()
       .query(
-        "SELECT TourID, ProviderID, TourName AS TenTour, Destination, Price AS Gia, Status, ImageURL AS HinhAnh, SoCho FROM Tours"
+        "SELECT TourID, ProviderID, TourName AS TenTour, Destination, Price AS Gia, Status, ImageURL AS HinhAnh, SoCho, IsFeatured FROM Tours"
       );
     res.json(result.recordset); // Trả dữ liệu dạng JSON
   } catch (err) {
@@ -170,7 +170,7 @@ router.get("/api/tours/:id", async (req, res) => {
       .request()
       .input("tourId", sql.VarChar(15), tourId).query(`
         SELECT TourID, ProviderID, TourName AS TenTour, Destination, Price AS Gia, Status, ImageURL AS HinhAnh, SoCho,
-          DiemThamQuan, AmThuc, DoiTuongThichHop, ThoiGianLyTuong, PhuongTien, KhuyenMai
+          DiemThamQuan, AmThuc, DoiTuongThichHop, ThoiGianLyTuong, PhuongTien, KhuyenMai, IsFeatured
         FROM Tours
         WHERE TourID = @tourId
       `);
@@ -495,6 +495,61 @@ router.get("/api/reviews/:tourID", async (req, res) => {
   } catch (err) {
     console.error("Lỗi khi lấy đánh giá:", err);
     res.status(500).json({ error: "Lỗi server khi lấy đánh giá." });
+  }
+});
+
+router.get("/api/popular-tours", async (req, res) => {
+  try {
+    const pool = await connect();
+    const result = await pool.request()
+      .query(`
+        SELECT TourID, TourName, Destination, Price, ImageURL, IsFeatured
+        FROM Tours
+        ORDER BY IsFeatured DESC, TourName ASC
+      `);
+    res.json(result.recordset);
+  } catch (err) {
+    console.error("Lỗi khi lấy tour phổ biến:", err);
+    res.status(500).json({ error: "Lỗi server khi lấy tour phổ biến." });
+  }
+});
+
+router.put("/tours/:id", async (req, res) => {
+  const tourId = req.params.id;
+  const { TourName, Destination, Price, ImageURL, SoCho, IsFeatured } = req.body;
+
+  console.log("PUT /tours/:id called with IsFeatured:", IsFeatured);
+
+  // Ép kiểu IsFeatured thành boolean 0 hoặc 1
+  const isFeaturedBit = IsFeatured ? 1 : 0;
+
+  try {
+    const pool = await connect();
+    const request = pool.request();
+
+    await request
+      .input("TourID", sql.VarChar, tourId)
+      .input("TourName", sql.NVarChar, TourName)
+      .input("Destination", sql.NVarChar, Destination)
+      .input("Price", sql.Decimal, Price)
+      .input("ImageURL", sql.NVarChar, ImageURL)
+      .input("SoCho", sql.Int, SoCho)
+      .input("IsFeatured", sql.Bit, isFeaturedBit)
+      .query(`
+        UPDATE Tours
+        SET TourName = @TourName,
+            Destination = @Destination,
+            Price = @Price,
+            ImageURL = @ImageURL,
+            SoCho = @SoCho,
+            IsFeatured = @IsFeatured
+        WHERE TourID = @TourID
+      `);
+
+    res.json({ success: true, message: "Cập nhật tour thành công" });
+  } catch (err) {
+    console.error("Lỗi khi cập nhật tour:", err);
+    res.status(500).json({ success: false, message: "Lỗi server khi cập nhật tour" });
   }
 });
 
