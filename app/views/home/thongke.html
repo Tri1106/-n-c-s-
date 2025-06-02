@@ -127,27 +127,55 @@
         <th>Trạng thái</th>
       </tr>
     </thead>
-    <tbody>
-      <!-- Dữ liệu mẫu, bạn có thể thay thế bằng vòng lặp EJS hoặc JS -->
-      <tr>
-        <td>BK12345</td>
-        <td>Nguyễn Văn A</td>
-        <td>Buôn Ma Thuột – Pleiku</td>
-        <td>2025-05-19</td>
-        <td>2</td>
-        <td class="status-paid">Đã thanh toán</td>
-      </tr>
-      <tr>
-        <td>BK12346</td>
-        <td>Lê Thị B</td>
-        <td>Măng Đen – Biển Hồ</td>
-        <td>2025-05-18</td>
-        <td>3</td>
-        <td class="status-unpaid">Chưa thanh toán</td>
-      </tr>
+  <tbody id="booking-summary-body">
+      <!-- Dữ liệu động sẽ được chèn vào đây -->
     </tbody>
-  </table>
+</table>
 </div>
 
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const tbody = document.getElementById('booking-summary-body');
+
+  async function fetchBookingSummary() {
+    try {
+      const response = await fetch('/api/admin/bookings-summary');
+      if (!response.ok) {
+        throw new Error('Lỗi khi lấy dữ liệu thống kê');
+      }
+      const data = await response.json();
+      renderTable(data);
+    } catch (error) {
+      console.error(error);
+      tbody.innerHTML = '<tr><td colspan="6">Lỗi khi tải dữ liệu</td></tr>';
+    }
+  }
+
+  function renderTable(data) {
+    if (!data || data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6">Không có dữ liệu</td></tr>';
+      return;
+    }
+    tbody.innerHTML = '';
+    data.forEach(item => {
+      const tr = document.createElement('tr');
+
+      const statusClass = item.PaymentStatus === 'Đã thanh toán' ? 'status-paid' : 'status-unpaid';
+
+      tr.innerHTML = `
+        <td>${item.BookingID}</td>
+        <td>${item.CustomerName}</td>
+        <td>${item.TourName}</td>
+        <td>${new Date(item.BookingDate).toLocaleDateString('vi-VN')}</td>
+        <td>${item.NumberOfGuests}</td>
+        <td class="${statusClass}">${item.PaymentStatus}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  fetchBookingSummary();
+});
+</script>
 </body>
 </html>

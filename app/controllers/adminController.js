@@ -1,7 +1,6 @@
 const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcryptjs");
-const path = require("path"); // Import path
 const db = require("../../db"); // Chỉ gọi 1 lần db, tránh trùng
 const session = require("express-session");
 const { error } = require("console");
@@ -63,41 +62,52 @@ router.post("/admin/bookings/:bookingID/confirm", async (req, res) => {
     const pool = await db.connect();
 
     // Lấy thông tin số tiền thanh toán từ bảng Bookings hoặc bảng liên quan
-    const bookingResult = await pool.request()
+    const bookingResult = await pool
+      .request()
       .input("BookingID", db.sql.VarChar, bookingID)
-      .query("SELECT BookingID, TourID FROM Bookings WHERE BookingID = @BookingID");
+      .query(
+        "SELECT BookingID, TourID FROM Bookings WHERE BookingID = @BookingID"
+      );
 
     if (bookingResult.recordset.length === 0) {
-      return res.status(404).json({ success: false, message: "Không tìm thấy booking" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Không tìm thấy booking" });
     }
 
     const booking = bookingResult.recordset[0];
 
     // Giả sử lấy số tiền từ bảng Tours theo TourID
-    const tourResult = await pool.request()
+    const tourResult = await pool
+      .request()
       .input("TourID", db.sql.VarChar, booking.TourID)
       .query("SELECT Price FROM Tours WHERE TourID = @TourID");
 
     if (tourResult.recordset.length === 0) {
-      return res.status(404).json({ success: false, message: "Không tìm thấy tour" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Không tìm thấy tour" });
     }
 
     const amount = tourResult.recordset[0].Price;
 
     // Thêm bản ghi vào bảng Payments
-    await pool.request()
+    await pool
+      .request()
       .input("BookingID", db.sql.VarChar, bookingID)
       .input("Amount", db.sql.Decimal, amount)
-      .input("PaymentStatus", db.sql.NVarChar, "Completed")
-      .query(`
+      .input("PaymentStatus", db.sql.NVarChar, "Completed").query(`
         INSERT INTO Payments (BookingID, Amount, PaymentStatus)
         VALUES (@BookingID, @Amount, @PaymentStatus)
       `);
 
     // Cập nhật trạng thái booking thành "Đã thanh toán"
-    await pool.request()
+    await pool
+      .request()
       .input("BookingID", db.sql.VarChar, bookingID)
-      .query("UPDATE Bookings SET Status = 'Đã thanh toán' WHERE BookingID = @BookingID");
+      .query(
+        "UPDATE Bookings SET Status = 'Đã thanh toán' WHERE BookingID = @BookingID"
+      );
 
     // TODO: Gửi thông báo cho khách hàng (có thể qua email hoặc cập nhật trạng thái)
 
@@ -244,7 +254,7 @@ router.get("/tours/data", async (req, res) => {
   try {
     const pool = await db.connect();
     const result = await pool.request().query(`
-      SELECT TourName, Destination, Price, ImageURL, SoCho
+      SELECT TourID, TourName, Destination, Price, ImageURL, SoCho
       FROM Tours
     `);
     res.json(result.recordset); // Trả dữ liệu JSON về phía frontend
@@ -253,76 +263,89 @@ router.get("/tours/data", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-router.put('/tours/:tourName', async (req, res) => {
-  if (!req.session.user || req.session.user.role !== 'admin') {
-    return res.status(403).json({ success: false, message: 'Không có quyền truy cập' });
+router.put("/tours/:tourID", async (req, res) => {
+  if (!req.session.user || req.session.user.role !== "admin") {
+    return res
+      .status(403)
+      .json({ success: false, message: "Không có quyền truy cập" });
   }
-  const tourName = req.params.tourName;
+  const tourID = req.params.tourID;
   const { TourName, Destination, Price, ImageURL, SoCho } = req.body;
   try {
     const pool = await db.connect();
-    const result = await pool.request()
-      .input('TourName', db.sql.NVarChar, TourName)
-      .input('Destination', db.sql.NVarChar, Destination)
-      .input('Price', db.sql.Decimal, Price)
-      .input('ImageURL', db.sql.NVarChar, ImageURL)
-      .input('SoCho', db.sql.Int, SoCho)
-      .input('OldTourName', db.sql.NVarChar, tourName)
-      .query(`
+    const result = await pool
+      .request()
+      .input("TourName", db.sql.NVarChar, TourName)
+      .input("Destination", db.sql.NVarChar, Destination)
+      .input("Price", db.sql.Decimal, Price)
+      .input("ImageURL", db.sql.NVarChar, ImageURL)
+      .input("SoCho", db.sql.Int, SoCho)
+      .input("TourID", db.sql.VarChar, tourID).query(`
         UPDATE Tours
         SET TourName = @TourName,
             Destination = @Destination,
             Price = @Price,
             ImageURL = @ImageURL,
             SoCho = @SoCho
-        WHERE TourName = @OldTourName
+        WHERE TourID = @TourID
       `);
     if (result.rowsAffected[0] === 0) {
-      return res.status(404).json({ success: false, message: 'Không tìm thấy tour' });
+      return res
+        .status(404)
+        .json({ success: false, message: "Không tìm thấy tour" });
     }
     res.json({ success: true });
   } catch (err) {
-    console.error('Lỗi cập nhật tour:', err);
-    res.status(500).json({ success: false, message: 'Lỗi server' });
+    console.error("Lỗi cập nhật tour:", err);
+    res.status(500).json({ success: false, message: "Lỗi server" });
   }
 });
 
-router.delete('/tours/:tourName', async (req, res) => {
-  if (!req.session.user || req.session.user.role !== 'admin') {
-    return res.status(403).json({ success: false, message: 'Không có quyền truy cập' });
+router.delete("/tours/:tourName", async (req, res) => {
+  if (!req.session.user || req.session.user.role !== "admin") {
+    return res
+      .status(403)
+      .json({ success: false, message: "Không có quyền truy cập" });
   }
   const tourName = req.params.tourName;
   try {
     const pool = await db.connect();
 
     // Lấy TourID theo TourName
-    const tourResult = await pool.request()
-      .input('TourName', db.sql.NVarChar, tourName)
-      .query('SELECT TourID FROM Tours WHERE TourName = @TourName');
+    const tourResult = await pool
+      .request()
+      .input("TourName", db.sql.NVarChar, tourName)
+      .query("SELECT TourID FROM Tours WHERE TourName = @TourName");
 
     if (tourResult.recordset.length === 0) {
-      return res.status(404).json({ success: false, message: 'Không tìm thấy tour' });
+      return res
+        .status(404)
+        .json({ success: false, message: "Không tìm thấy tour" });
     }
 
     const tourID = tourResult.recordset[0].TourID;
 
     // Xóa các lịch trình liên quan trong bảng Itineraries
-    await pool.request()
-      .input('TourID', db.sql.VarChar, tourID)
-      .query('DELETE FROM Itineraries WHERE TourID = @TourID');
+    await pool
+      .request()
+      .input("TourID", db.sql.VarChar, tourID)
+      .query("DELETE FROM Itineraries WHERE TourID = @TourID");
 
     // Xóa tour
-    const result = await pool.request()
-      .input('TourName', db.sql.NVarChar, tourName)
-      .query('DELETE FROM Tours WHERE TourName = @TourName');
+    const result = await pool
+      .request()
+      .input("TourName", db.sql.NVarChar, tourName)
+      .query("DELETE FROM Tours WHERE TourName = @TourName");
 
     if (result.rowsAffected[0] === 0) {
-      return res.status(404).json({ success: false, message: 'Không tìm thấy tour' });
+      return res
+        .status(404)
+        .json({ success: false, message: "Không tìm thấy tour" });
     }
     res.json({ success: true });
   } catch (err) {
-    console.error('Lỗi xóa tour:', err);
-    res.status(500).json({ success: false, message: 'Lỗi server' });
+    console.error("Lỗi xóa tour:", err);
+    res.status(500).json({ success: false, message: "Lỗi server" });
   }
 });
 
@@ -337,6 +360,53 @@ router.get("/admin-bookings.html", (req, res) => {
     "admin-bookings.html"
   );
   res.sendFile(filePath);
+});
+
+const path = require("path");
+
+router.get("/thongke", (req, res) => {
+  const filePath = path.join(
+    __dirname,
+    "..",
+    "..",
+    "app",
+    "views",
+    "home",
+    "thongke.html"
+  );
+  res.sendFile(filePath);
+});
+
+// API lấy dữ liệu thống kê booking cho admin
+router.get("/api/admin/bookings-summary", async (req, res) => {
+  if (!req.session.user || req.session.user.role !== "admin") {
+    return res.status(403).json({ error: "Không có quyền truy cập" });
+  }
+  try {
+    const pool = await db.connect();
+    const result = await pool.request().query(`
+      SELECT 
+        b.BookingID,
+        c.Name AS CustomerName,
+        t.TourName,
+        b.BookingDate,
+        -- Lấy tổng số khách từ trường NumberOfGuests đã lưu trong bảng Bookings
+        ISNULL(b.NumberOfGuests, 0) AS NumberOfGuests,
+        CASE 
+          WHEN p.PaymentStatus = 'Completed' THEN 'Đã thanh toán'
+          ELSE 'Chưa thanh toán'
+        END AS PaymentStatus
+      FROM Bookings b
+      JOIN Customers c ON b.CustomerID = c.CustomerID
+      JOIN Tours t ON b.TourID = t.TourID
+      LEFT JOIN Payments p ON b.BookingID = p.BookingID
+      ORDER BY b.BookingDate DESC
+    `);
+    res.json(result.recordset);
+  } catch (err) {
+    console.error("Lỗi lấy dữ liệu thống kê booking:", err);
+    res.status(500).json({ error: "Lỗi server" });
+  }
 });
 
 module.exports = router;

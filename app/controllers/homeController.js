@@ -320,6 +320,15 @@ router.post("/thanh-toan", async (req, res) => {
               WHERE TourID = @TourID_param
             `);
         }
+        // Lưu tổng số khách vào bảng Bookings
+        await request
+          .input("BookingID", sql.VarChar, bookingID)
+          .input("NumberOfGuests", sql.Int, totalPeople)
+          .query(`
+            UPDATE Bookings
+            SET NumberOfGuests = @NumberOfGuests
+            WHERE BookingID = @BookingID
+          `);
 
         await transaction.commit();
 
@@ -515,7 +524,7 @@ router.get("/api/popular-tours", async (req, res) => {
 });
 
 router.put("/tours/:id", async (req, res) => {
-  const tourId = req.params.id;
+  let tourId = req.params.id;
   const { TourName, Destination, Price, ImageURL, SoCho, IsFeatured } = req.body;
 
   console.log("PUT /tours/:id called with IsFeatured:", IsFeatured);
@@ -523,11 +532,20 @@ router.put("/tours/:id", async (req, res) => {
   // Ép kiểu IsFeatured thành boolean 0 hoặc 1
   const isFeaturedBit = IsFeatured ? 1 : 0;
 
+  // Trim tourId để loại bỏ khoảng trắng thừa
+  tourId = tourId ? tourId.trim() : "";
+
+  console.log("Received tourId:", `"${tourId}"`);
+
+  if (!tourId) {
+    return res.status(400).json({ success: false, message: "Thiếu tourId trong URL" });
+  }
+
   try {
     const pool = await connect();
     const request = pool.request();
 
-    await request
+    const result = await request
       .input("TourID", sql.VarChar, tourId)
       .input("TourName", sql.NVarChar, TourName)
       .input("Destination", sql.NVarChar, Destination)
@@ -545,6 +563,11 @@ router.put("/tours/:id", async (req, res) => {
             IsFeatured = @IsFeatured
         WHERE TourID = @TourID
       `);
+
+    console.log("Update result:", result);
+    if (result.rowsAffected[0] === 0) {
+      return res.status(404).json({ success: false, message: "Không tìm thấy tour để cập nhật" });
+    }
 
     res.json({ success: true, message: "Cập nhật tour thành công" });
   } catch (err) {

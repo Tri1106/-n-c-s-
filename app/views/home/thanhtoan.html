@@ -207,7 +207,7 @@
         }
       }
       document.getElementById('remainingAmount').textContent = formatCurrency(remainingAmountValue);
-      document.getElementById('bookingStatus').textContent = data.Status || 'Chưa thanh toán';
+      document.getElementById('bookingStatus').textContent = data.Status || 'Booking của quý khách chưa được xác nhận.';
       document.getElementById('paymentDeadline').textContent = data.PaymentDeadline ? formatDateTime(data.PaymentDeadline) : '';
 
       // Cập nhật thông tin tour

@@ -138,11 +138,13 @@
       <table id="tourList">
         <thead>
           <tr>
+            <th>Mã Tour</th>
             <th>Tên Tour</th>
             <th>Điểm Đến</th>
             <th>Giá Tour</th>
             <th>Hình Ảnh</th>
             <th>Số chỗ</th>
+            <th>Mục khác</th>
             <th>Hành Động</th>
           </tr>
         </thead>
@@ -196,15 +198,16 @@
       tours.forEach(tour => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
+          <td>${tour.TourID}</td>
           <td>${tour.TourName}</td>
           <td>${tour.Destination}</td>
           <td>${tour.Price}</td>
           <td><img src="${tour.ImageURL}" alt="Tour Image" width="100"/></td>
           <td>${tour.SoCho}</td>
-          <td>${tour.IsFeatured ? 'Có' : 'Không'}</td>
+          <td>${Number(tour.IsFeatured) === 1 ? 'Có' : 'Không'}</td>
           <td class="action-buttons">
-            <button class="edit-btn" onclick="showEditForm('${tour.TourName}', '${tour.Destination}', ${tour.Price}, '${tour.ImageURL}', ${tour.SoCho}, ${tour.IsFeatured})">Sửa</button>
-            <button class="delete-btn" onclick="deleteTour('${tour.TourName}')">Xóa</button>
+            <button class="edit-btn" onclick="showEditForm('${tour.TourID}', '${tour.TourName}', '${tour.Destination}', ${tour.Price}, '${tour.ImageURL}', ${tour.SoCho}, ${tour.IsFeatured})">Sửa</button>
+            <button class="delete-btn" onclick="deleteTour('${tour.TourID}')">Xóa</button>
           </td>
         `;
         tbody.appendChild(tr);
@@ -214,14 +217,14 @@
         }
       }
 
-      function showEditForm(tourName, destination, price, imageURL, seats) {
-        document.getElementById('editTourID').value = tourName;
+      function showEditForm(tourID, tourName, destination, price, imageURL, seats, isFeatured) {
+        document.getElementById('editTourID').value = tourID;
         document.getElementById('editTourName').value = tourName;
         document.getElementById('editDestination').value = destination;
         document.getElementById('editPrice').value = price;
         document.getElementById('editImageURL').value = imageURL;
         document.getElementById('editSeats').value = seats;
-        document.getElementById('editIsFeatured').checked = arguments[5] || false;
+        document.getElementById('editIsFeatured').checked = isFeatured || false;
         document.getElementById('editFormContainer').style.display = 'block';
       }
 
@@ -231,7 +234,7 @@
 
       document.getElementById('editTourForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const tourID = document.getElementById('editTourID').value;
+        const tourID = document.getElementById('editTourID').value.trim();
         const updatedTour = {
           TourName: document.getElementById('editTourName').value,
           Destination: document.getElementById('editDestination').value,
@@ -253,7 +256,8 @@
           if (result.success) {
             alert('Cập nhật tour thành công!');
             hideEditForm();
-            fetchTours();
+            await fetchTours();  // Thêm await để đợi fetchTours hoàn thành
+            location.reload(); // Thêm reload trang để chắc chắn dữ liệu mới được hiển thị
           } else {
             alert('Cập nhật tour thất bại: ' + result.message);
           }
