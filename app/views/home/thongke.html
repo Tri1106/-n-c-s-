@@ -118,11 +118,13 @@
         <th>Khách hàng</th>
         <th>Tên tour</th>
         <th>Ngày đặt</th>
-        <th>Số khách</th>
-        <th>Trạng thái</th>
-      </tr>
-    </thead>
-  <tbody id="booking-summary-body">
+        <th>Tổng số khách</th>
+      <th>Người Lớn</th>
+      <th>Trẻ em</th>
+      <th>Trạng thái</th>
+    </tr>
+  </thead>
+<tbody id="booking-summary-body">
       <!-- Dữ liệu động sẽ được chèn vào đây -->
     </tbody>
 </table>
@@ -172,6 +174,8 @@ document.addEventListener('DOMContentLoaded', () => {
             <td>${item.TourName}</td>
             <td>${new Date(item.BookingDate).toLocaleDateString('vi-VN')}</td>
             <td>${item.NumberOfGuests}</td>
+            <td>${item.Adult}</td>
+            <td>${item.Child}</td>
             <td class="${statusClass}">${item.PaymentStatus}</td>
           `;
           tbody.appendChild(tr);

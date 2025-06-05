@@ -147,12 +147,53 @@ router.get("/provider-dashboard", (req, res) => {
 
 router.get("/api/tours", async (req, res) => {
   try {
+    const { departure, destination, date, budget, transport } = req.query;
     const pool = await connect();
-    const result = await pool
-      .request()
-      .query(
-        "SELECT TourID, ProviderID, TourName AS TenTour, Destination, Price AS Gia, Status, ImageURL AS HinhAnh, SoCho, IsFeatured FROM Tours"
-      );
+
+    let query = `
+      SELECT TourID, ProviderID, TourName AS TenTour, Destination, Price AS Gia, Status, ImageURL AS HinhAnh, SoCho, IsFeatured
+      FROM Tours
+      WHERE 1=1
+    `;
+
+    if (departure) {
+      query += ` AND Destination LIKE '%' + @departure + '%'`;
+    }
+    if (destination) {
+      query += ` AND Destination LIKE '%' + @destination + '%'`;
+    }
+    if (date) {
+      query += ` AND CONVERT(date, DepartureDate) = @date`; // Assuming Tours has DepartureDate column
+    }
+    if (budget) {
+      if (budget === "1") {
+        query += ` AND Price < 5000000`;
+      } else if (budget === "2") {
+        query += ` AND Price BETWEEN 5000000 AND 10000000`;
+      } else if (budget === "3") {
+        query += ` AND Price > 10000000`;
+      }
+    }
+    if (transport) {
+      query += ` AND Transport = @transport`; // Assuming Tours has Transport column
+    }
+
+    const request = pool.request();
+
+    if (departure) {
+      request.input("departure", departure);
+    }
+    if (destination) {
+      request.input("destination", destination);
+    }
+    if (date) {
+      request.input("date", date);
+    }
+    if (transport) {
+      request.input("transport", transport);
+    }
+
+    const result = await request.query(query);
     res.json(result.recordset); // Trả dữ liệu dạng JSON
   } catch (err) {
     console.error("Lỗi khi lấy dữ liệu tour:", err);

@@ -167,7 +167,7 @@
       <option value="train">Tàu hỏa</option>
     </select>
 
-    <button class="search-btn">Tìm kiếm</button>
+    <button class="search-btn" id="searchBtn">Tìm kiếm</button>
   </div>
 
   <div class="tour-list" id="tour-list">
@@ -175,9 +175,10 @@
   </div>
 
   <script>
-    async function loadTours() {
+    async function loadTours(filters = {}) {
       try {
-        const res = await fetch('/api/tours');
+        const params = new URLSearchParams(filters);
+        const res = await fetch('/api/tours?' + params.toString());
         const tours = await res.json();
         const tourList = document.getElementById('tour-list');
 
@@ -207,7 +208,26 @@
       window.location.href = `/tour-detail?tourId=${tourId}`;
     }
 
-    window.onload = loadTours;
+    document.getElementById('searchBtn').addEventListener('click', () => {
+      const departure = document.getElementById('departure').value.trim();
+      const destination = document.getElementById('destination').value.trim();
+      const date = document.getElementById('date').value;
+      const budget = document.getElementById('budget').value;
+      const transport = document.getElementById('transport').value;
+
+      const filters = {};
+      if (departure) filters.departure = departure;
+      if (destination) filters.destination = destination;
+      if (date) filters.date = date;
+      if (budget) filters.budget = budget;
+      if (transport) filters.transport = transport;
+
+      loadTours(filters);
+    });
+
+    window.onload = () => {
+      loadTours();
+    };
   </script>
 </body>
 </html>

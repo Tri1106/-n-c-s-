@@ -143,7 +143,7 @@
       </div>
     </div>
 
-    <!-- Additional Info Section -->
+
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
@@ -418,12 +418,12 @@
           document.getElementById("tour-price").textContent = `Giá: ${Number(
             tour.tour.Gia
           ).toLocaleString()} VNĐ`;
-          document.getElementById("old-price").textContent = ""; // No old price data available
-          document.getElementById("tagline").textContent = ""; // No tagline data available
+          document.getElementById("old-price").textContent = ""; 
+          document.getElementById("tagline").textContent = ""; 
 
           const detailsList = document.getElementById("tour-details-list");
 
-          // Lấy ngày khởi hành và thời gian từ flights
+
           let departureDateText = "Chưa có dữ liệu";
           let durationText = "Chưa có dữ liệu";
           if (tour.flights && tour.flights.length > 0) {
@@ -449,7 +449,6 @@
         <li>⏱️ Thời gian: ${durationText}</li>
       `;
 
-          // Hiển thị thông tin thêm về chuyến đi
           const additionalInfoContent = document.getElementById(
             "additional-info-content"
           );
@@ -480,7 +479,6 @@
         </div>
       `;
 
-          // Gọi renderItinerary với dữ liệu lịch trình thực tế
           renderItinerary(tour.itineraries);
         } catch (error) {
           alert("Lỗi khi tải chi tiết tour.");

@@ -33,19 +33,17 @@ router.get("/register", (req, res) => {
   res.sendFile(filePath);
 });
 
-// Xử lý đăng ký
+
 router.post(
   "/register",
   express.urlencoded({ extended: true }),
   async (req, res) => {
-    const { fullname, email, phone, password, role } = req.body; // Đảm bảo role có trong body
+    const { fullname, email, phone, password, role } = req.body; 
     const userID = "U" + Date.now();
 
     try {
       const pool = await connect();
       const hashedPassword = await bcrypt.hash(password, 10);
-
-      // Nếu không có role trong body, mặc định là 'customer'
       const userRole = "customer";
 
       await pool
@@ -55,13 +53,13 @@ router.post(
         .input("email", sql.VarChar, email)
         .input("phone", sql.VarChar, phone)
         .input("password", sql.VarChar, hashedPassword)
-        .input("role", sql.VarChar, userRole) // Sử dụng userRole
+        .input("role", sql.VarChar, userRole)  
         .query(`
         INSERT INTO Users (UserID, FullName, Email, Phone, Password, Role)
         VALUES (@userID, @fullname, @email, @phone, @password, @role)
       `);
 
-      res.redirect("/account/login"); // Redirect đúng path sau khi đăng ký thành công
+      res.redirect("/account/login"); 
     } catch (err) {
       console.error(err);
       res.status(500).send("Lỗi khi đăng ký.");

@@ -423,6 +423,8 @@ router.get("/api/admin/bookings-summary", async (req, res) => {
         t.TourName,
         b.BookingDate,
         ISNULL(b.NumberOfGuests, 0) AS NumberOfGuests,
+        ISNULL(b.Adult, 0) AS Adult,
+        ISNULL(b.Child, 0) AS Child,
         (SELECT TOP 1 PaymentStatus FROM Payments p WHERE p.BookingID = b.BookingID ORDER BY p.PaymentID DESC) AS PaymentStatusRaw
       FROM Bookings b
       JOIN Customers c ON b.CustomerID = c.CustomerID
