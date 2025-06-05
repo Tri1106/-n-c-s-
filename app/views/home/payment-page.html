@@ -2,36 +2,102 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8" />
-  <title>Giao diện thanh toán</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Phương thức thanh toán</title>
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: Arial, sans-serif;
-      background: #f5f7fa;
-      padding: 20px;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #f5f7fa, #e3f2fd);
+      padding: 40px 20px;
+      margin: 0;
+      color: #333;
+    }
+
+    .container {
       max-width: 600px;
       margin: auto;
+      background: #ffffff;
+      border-radius: 15px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      padding: 30px 25px;
+      transition: all 0.3s ease-in-out;
     }
+
     h3 {
-      color: #004085;
-      margin-bottom: 20px;
+      color: #2c3e50;
+      text-align: center;
+      margin-bottom: 25px;
+      font-size: 26px;
     }
-    .payment-method {
-      border: 1px solid #ccc;
+
+    .payment-method h4 {
+      color: #00796b;
+      font-size: 20px;
+      margin-bottom: 15px;
+    }
+
+    .payment-info {
+      font-size: 16px;
+      line-height: 1.6;
+    }
+
+    .payment-info strong {
+      color: #37474f;
+    }
+
+    em {
+      color: #e53935;
+      font-weight: bold;
+    }
+
+    .note {
+      margin-top: 20px;
+      font-style: italic;
+      background: #fff3cd;
+      color: #856404;
+      padding: 12px;
+      border-left: 4px solid #ffc107;
       border-radius: 8px;
-      padding: 15px;
-      margin-bottom: 20px;
-      background: white;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        padding: 20px;
+      }
+
+      h3 {
+        font-size: 22px;
+      }
+
+      .payment-method h4 {
+        font-size: 18px;
+      }
+
+      .payment-info {
+        font-size: 15px;
+      }
     }
   </style>
 </head>
 <body>
-  <h3>Phương thức thanh toán</h3>
-  <div class="payment-method" id="bankTransfer">
-    <h4>Chuyển khoản ngân hàng</h4>
-    <p><strong>Ngân hàng:</strong> Vietcombank</p>
-    <p><strong>Số tài khoản:</strong> 123456789</p>
-    <p><strong>Chủ tài khoản:</strong> Công ty Du lịch ABC</p>
-    <p>Vui lòng ghi rõ <em>Mã đặt chỗ</em> khi chuyển khoản để xác nhận thanh toán.</p>
+  <div class="container">
+    <h3>Phương thức thanh toán</h3>
+    <div class="payment-method" id="bankTransfer">
+      <h4>Chuyển khoản ngân hàng</h4>
+      <div class="payment-info">
+        <p><strong>Ngân hàng:</strong> Vietcombank</p>
+        <p><strong>Số tài khoản:</strong> 0259456136</p>
+        <p><strong>Chủ tài khoản:</strong> Công ty Du lịch Minh Tiến</p>
+        <p><strong>Nội dung chuyển khoản:</strong> Ghi rõ <em>Mã đặt chỗ</em> để xác nhận thanh toán</p>
+      </div>
+      <div class="note">
+        Vui lòng kiểm tra kỹ thông tin trước khi chuyển khoản. Mọi sai sót có thể gây chậm trễ xác nhận đơn hàng.
+      </div>
+    </div>
   </div>
 </body>
 </html>

@@ -1,16 +1,14 @@
 const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcryptjs");
-const db = require("../../db"); // Chỉ gọi 1 lần db, tránh trùng
+const db = require("../../db"); 
 const session = require("express-session");
 const { error } = require("console");
 const { getSystemErrorMessage } = require("util");
 
 // Route cho admin-dashboard
 router.get("/admin-dashboard", async (req, res) => {
-  console.log("Session user tại admin-dashboard:", req.session.user); // Kiểm tra session
-
-  // Kiểm tra xem có session và role là "admin" không
+  console.log("Session user tại admin-dashboard:", req.session.user); 
   if (req.session.user && req.session.user.role === "admin") {
     const filePath = path.join(
       __dirname,
@@ -19,11 +17,11 @@ router.get("/admin-dashboard", async (req, res) => {
       "app",
       "views",
       "home",
-      "admin-dashboard.html" // Đảm bảo đường dẫn đúng đến file HTML của Admin Dashboard
+      "admin-dashboard.html" 
     );
     res.sendFile(filePath);
   } else {
-    res.redirect("/login"); // Chuyển hướng nếu không phải admin
+    res.redirect("/login"); 
   }
 });
 
@@ -38,13 +36,30 @@ router.get("/admin/bookings", async (req, res) => {
       SELECT b.BookingID, b.BookingDate, b.TourID, b.CustomerID,
              c.Name AS CustomerName,
              t.TourName,
-             p.PaymentStatus
+             (SELECT TOP 1 PaymentStatus FROM Payments p WHERE p.BookingID = b.BookingID ORDER BY p.PaymentID DESC) AS PaymentStatus
       FROM Bookings b
       JOIN Customers c ON b.CustomerID = c.CustomerID
       JOIN Tours t ON b.TourID = t.TourID
-      LEFT JOIN Payments p ON b.BookingID = p.BookingID
       ORDER BY b.BookingDate DESC
     `);
+    // Log chi tiết PaymentStatus thô và chuẩn hóa
+    result.recordset.forEach(r => {
+      const raw = r.PaymentStatus;
+      const normalized = raw ? raw.normalize("NFC").replace(/Ð/g, "Đ").replace(/ð/g, "đ").trim() : "";
+      // So sánh trực tiếp với "Đã thanh toán"
+      r.PaymentStatus = (normalized === "Đã thanh toán") ? "Đã thanh toán" : "Chưa thanh toán";
+      console.log(`BookingID: ${r.BookingID}, PaymentStatus raw: '${raw}', normalized: '${normalized}', final: '${r.PaymentStatus}'`);
+    });
+
+    // Thêm log tất cả PaymentStatus của từng Booking
+    for (const r of result.recordset) {
+      const payments = await pool.request()
+        .input("BookingID", r.BookingID)
+        .query("SELECT PaymentID, PaymentStatus FROM Payments WHERE BookingID = @BookingID ORDER BY PaymentID DESC");
+      console.log(`BookingID: ${r.BookingID}, Payments:`, payments.recordset);
+    }
+
+    console.log("DEBUG /admin/bookings result:", result.recordset);
     res.json(result.recordset);
   } catch (err) {
     console.error("Lỗi lấy danh sách booking:", err);
@@ -52,7 +67,6 @@ router.get("/admin/bookings", async (req, res) => {
   }
 });
 
-// API admin xác nhận thanh toán cho booking
 router.post("/admin/bookings/:bookingID/confirm", async (req, res) => {
   if (!req.session.user || req.session.user.role !== "admin") {
     return res.status(403).json({ error: "Không có quyền truy cập" });
@@ -61,13 +75,16 @@ router.post("/admin/bookings/:bookingID/confirm", async (req, res) => {
   try {
     const pool = await db.connect();
 
-    // Lấy thông tin số tiền thanh toán từ bảng Bookings hoặc bảng liên quan
+    // Lấy thông tin số tiền thanh toán và email khách hàng từ bảng Bookings và Customers
     const bookingResult = await pool
       .request()
       .input("BookingID", db.sql.VarChar, bookingID)
-      .query(
-        "SELECT BookingID, TourID FROM Bookings WHERE BookingID = @BookingID"
-      );
+      .query(`
+        SELECT b.BookingID, b.TourID, c.Email, c.Name
+        FROM Bookings b
+        JOIN Customers c ON b.CustomerID = c.CustomerID
+        WHERE b.BookingID = @BookingID
+      `);
 
     if (bookingResult.recordset.length === 0) {
       return res
@@ -77,7 +94,7 @@ router.post("/admin/bookings/:bookingID/confirm", async (req, res) => {
 
     const booking = bookingResult.recordset[0];
 
-    // Giả sử lấy số tiền từ bảng Tours theo TourID
+    // Lấy số tiền từ bảng Tours theo TourID
     const tourResult = await pool
       .request()
       .input("TourID", db.sql.VarChar, booking.TourID)
@@ -92,26 +109,39 @@ router.post("/admin/bookings/:bookingID/confirm", async (req, res) => {
     const amount = tourResult.recordset[0].Price;
 
     // Thêm bản ghi vào bảng Payments
-    await pool
-      .request()
-      .input("BookingID", db.sql.VarChar, bookingID)
-      .input("Amount", db.sql.Decimal, amount)
-      .input("PaymentStatus", db.sql.NVarChar, "Completed").query(`
-        INSERT INTO Payments (BookingID, Amount, PaymentStatus)
-        VALUES (@BookingID, @Amount, @PaymentStatus)
-      `);
+    const paymentID = "P" + Date.now();
 
-    // Cập nhật trạng thái booking thành "Đã thanh toán"
-    await pool
-      .request()
-      .input("BookingID", db.sql.VarChar, bookingID)
-      .query(
-        "UPDATE Bookings SET Status = 'Đã thanh toán' WHERE BookingID = @BookingID"
-      );
+    const transaction = new db.sql.Transaction(pool);
+    await transaction.begin();
+    try {
+      const request = new db.sql.Request(transaction);
+      await request
+        .input("PaymentID", db.sql.VarChar, paymentID)
+        .input("BookingID", db.sql.VarChar, bookingID)
+        .input("Amount", db.sql.Decimal, amount)
+        .input("PaymentStatus", db.sql.VarChar, "Đã thanh toán")
+        .query(`
+          INSERT INTO Payments (PaymentID, BookingID, Amount, PaymentStatus)
+          VALUES (@PaymentID, @BookingID, @Amount, N'Đã thanh toán')
+        `);
 
-    // TODO: Gửi thông báo cho khách hàng (có thể qua email hoặc cập nhật trạng thái)
+      // Bỏ cập nhật trạng thái thanh toán trong bảng Bookings vì không có cột PaymentStatus
+      // await request
+      //   .input("BookingID2", db.sql.VarChar, bookingID)
+      //   .query(`
+      //     UPDATE Bookings
+      //     SET PaymentStatus = N'Đã thanh toán'
+      //     WHERE BookingID = @BookingID2
+      //   `);
 
-    res.json({ success: true });
+      await transaction.commit();
+      console.log(`Đã thêm bản ghi thanh toán mới với PaymentID: ${paymentID}, BookingID: ${bookingID}, Amount: ${amount} và cập nhật trạng thái thanh toán trong Bookings`);
+      res.json({ success: true });
+    } catch (err) {
+      await transaction.rollback();
+      console.error("Lỗi trong transaction xác nhận thanh toán:", err);
+      res.status(500).json({ success: false, message: "Lỗi server" });
+    }
   } catch (err) {
     console.error("Lỗi xác nhận thanh toán:", err);
     res.status(500).json({ success: false, message: "Lỗi server" });
@@ -377,32 +407,65 @@ router.get("/thongke", (req, res) => {
   res.sendFile(filePath);
 });
 
-// API lấy dữ liệu thống kê booking cho admin
+// API lấy dữ liệu thống kê booking cho admin với bộ lọc
 router.get("/api/admin/bookings-summary", async (req, res) => {
   if (!req.session.user || req.session.user.role !== "admin") {
     return res.status(403).json({ error: "Không có quyền truy cập" });
   }
   try {
+    const { month, tourName, paymentStatus } = req.query;
     const pool = await db.connect();
-    const result = await pool.request().query(`
+
+    let query = `
       SELECT 
         b.BookingID,
         c.Name AS CustomerName,
         t.TourName,
         b.BookingDate,
-        -- Lấy tổng số khách từ trường NumberOfGuests đã lưu trong bảng Bookings
         ISNULL(b.NumberOfGuests, 0) AS NumberOfGuests,
-        CASE 
-          WHEN p.PaymentStatus = 'Completed' THEN 'Đã thanh toán'
-          ELSE 'Chưa thanh toán'
-        END AS PaymentStatus
+        (SELECT TOP 1 PaymentStatus FROM Payments p WHERE p.BookingID = b.BookingID ORDER BY p.PaymentID DESC) AS PaymentStatusRaw
       FROM Bookings b
       JOIN Customers c ON b.CustomerID = c.CustomerID
       JOIN Tours t ON b.TourID = t.TourID
-      LEFT JOIN Payments p ON b.BookingID = p.BookingID
-      ORDER BY b.BookingDate DESC
-    `);
-    res.json(result.recordset);
+      WHERE 1=1
+    `;
+
+    if (month) {
+      // Lọc theo tháng (YYYY-MM)
+      query += ` AND FORMAT(b.BookingDate, 'yyyy-MM') = @month`;
+    }
+    if (tourName) {
+      query += ` AND t.TourName LIKE '%' + @tourName + '%'`;
+    }
+
+    query += ` ORDER BY b.BookingDate DESC`;
+
+    const request = pool.request();
+
+    if (month) {
+      request.input("month", db.sql.VarChar, month);
+    }
+    if (tourName) {
+      request.input("tourName", db.sql.NVarChar, tourName);
+    }
+
+    const result = await request.query(query);
+
+    // Chuẩn hóa PaymentStatus trước khi trả về
+    result.recordset.forEach(r => {
+      const raw = r.PaymentStatusRaw;
+      const normalized = raw ? raw.normalize("NFC").replace(/Ð/g, "Đ").replace(/ð/g, "đ").trim() : "";
+      r.PaymentStatus = (normalized === "Đã thanh toán") ? "Đã thanh toán" : "Chưa thanh toán";
+      delete r.PaymentStatusRaw;
+    });
+
+    // Lọc theo trạng thái thanh toán nếu có
+    let filtered = result.recordset;
+    if (paymentStatus && paymentStatus !== "Tất cả") {
+      filtered = filtered.filter(r => r.PaymentStatus === paymentStatus);
+    }
+
+    res.json(filtered);
   } catch (err) {
     console.error("Lỗi lấy dữ liệu thống kê booking:", err);
     res.status(500).json({ error: "Lỗi server" });

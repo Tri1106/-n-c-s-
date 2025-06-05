@@ -1,124 +1,352 @@
 <!DOCTYPE html>
 <html lang="vi">
-<head>
+  <head>
     <meta charset="UTF-8" />
     <title>Lịch sử đơn đặt</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f4f6f8;
-            margin: 0;
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: #eef2f5;
+        margin: 0;
+        color: #333;
+      }
+
+      header {
+        background: linear-gradient(90deg, #2e4357, #34495e);
+        color: white;
+        padding: 25px;
+        text-align: center;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      }
+
+      nav {
+        background: #3b4c5c;
+      }
+
+      nav ul {
+        list-style: none;
+        display: flex;
+        justify-content: center;
+        padding: 12px 0;
+        margin: 0;
+        gap: 40px;
+        flex-wrap: wrap;
+      }
+
+      nav ul li a {
+        color: white;
+        font-weight: bold;
+        text-decoration: none;
+        padding: 8px 14px;
+        border-radius: 6px;
+        transition: background 0.3s ease;
+      }
+
+      nav ul li a:hover {
+        background: #2c3e50;
+      }
+
+      main {
+        padding: 40px 20px;
+        max-width: 1200px;
+        margin: auto;
+      }
+
+      h2 {
+        text-align: center;
+        color: #2c3e50;
+        margin-bottom: 30px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+      }
+
+      th,
+      td {
+        padding: 16px;
+        text-align: center;
+        border-bottom: 1px solid #eee;
+        font-size: 15px;
+      }
+
+      th {
+        background-color: #2980b9;
+        color: white;
+        text-transform: uppercase;
+        font-size: 14px;
+      }
+
+      tr:hover {
+        background-color: #f2f8fc;
+      }
+
+      .btn-action {
+        padding: 8px 14px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: bold;
+        font-size: 14px;
+        transition: background 0.3s ease;
+      }
+
+      .btn-view {
+        background-color: #3498db;
+        color: white;
+      }
+
+      .btn-view:hover {
+        background-color: #2980b9;
+      }
+
+      .btn-rate {
+        background-color: #2ecc71;
+        color: white;
+      }
+
+      .btn-rate:hover {
+        background-color: #27ae60;
+      }
+
+      .status-paid {
+        background-color: #d4edda;
+        color: #155724;
+        padding: 6px 10px;
+        border-radius: 6px;
+        display: inline-block;
+        font-weight: 600;
+      }
+
+      .status-unpaid {
+        background-color: #f8d7da;
+        color: #721c24;
+        padding: 6px 10px;
+        border-radius: 6px;
+        display: inline-block;
+        font-weight: 600;
+      }
+
+      @media (max-width: 768px) {
+        th,
+        td {
+          padding: 10px;
+          font-size: 13px;
         }
-        header {
-            background: #2e4357;
-            color: white;
-            padding: 20px;
-            text-align: center;
-        }
-        nav {
-            background: #34495e;
-            padding: 10px 0;
-        }
+
         nav ul {
-            list-style: none;
-            display: flex;
-            justify-content: center;
-            gap: 30px;
-            margin: 0;
-            padding: 0;
+          flex-direction: column;
+          gap: 15px;
         }
-        nav ul li,
-        nav ul li a {
-            color: white;
-            font-weight: bold;
-            text-decoration: none;
-        }
-        main {
-            padding: 30px;
-            max-width: 1200px;
-            margin: auto;
-        }
-        h2 {
-            text-align: center;
-            color: #2c3e50;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            border-radius: 10px;
-            overflow: hidden;
-        }
-        th, td {
-            padding: 12px 15px;
-            border-bottom: 1px solid #ddd;
-            text-align: center;
-        }
-        th {
-            background-color: #2980b9;
-            color: white;
-        }
-        tr:hover {
-            background-color: #f9f9f9;
-        }
+      }
     </style>
-</head>
-<body>
-<header>
-    <h1>Lịch sử đơn đặt</h1>
-    <nav>
+  </head>
+  <body>
+    <header>
+      <h1>Lịch sử đơn đặt</h1>
+      <nav>
         <ul>
-            <li><a href="/home">Trang chủ</a></li>
-            <li><a href="/booking-history">Lịch sử đơn đặt</a></li>
-            <li><a href="/logout">Đăng xuất</a></li>
+          <li><a href="/home">🏠 Trang chủ</a></li>
+          <li><a href="/booking-history">🕘 Lịch sử đơn đặt</a></li>
+          <li><a href="/logout">🚪 Đăng xuất</a></li>
         </ul>
-    </nav>
-</header>
-<main>
-    <h2>Danh sách đơn đặt của bạn</h2>
-    <table id="bookingHistoryTable">
+      </nav>
+    </header>
+
+    <main>
+      <h2>Danh sách đơn đặt của bạn</h2>
+      <table id="bookingHistoryTable">
         <thead>
-            <tr>
-                <th>Mã đặt chỗ</th>
-                <th>Tour</th>
-                <th>Ngày đặt</th>
-                <th>Trạng thái thanh toán</th>
-                <th>Thao tác</th>
-            </tr>
+          <tr>
+            <th>Mã đặt chỗ</th>
+            <th>Tour</th>
+            <th>Ngày đặt</th>
+            <th>Thanh toán</th>
+            <th>Thao tác</th>
+            <th>Đánh giá</th>
+          </tr>
         </thead>
         <tbody>
-            <!-- Dữ liệu đơn đặt sẽ được thêm vào đây -->
+          <!-- Dữ liệu đơn đặt sẽ được thêm vào đây -->
         </tbody>
-    </table>
-</main>
-<script>
-    async function fetchBookingHistory() {
+      </table>
+
+      <!-- Modal đánh giá -->
+      <div
+        id="ratingModal"
+        style="
+          display: none;
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0, 0, 0, 0.5);
+        "
+      >
+        <div
+          style="
+            background: #fff;
+            padding: 20px;
+            max-width: 400px;
+            margin: 100px auto;
+            border-radius: 8px;
+            position: relative;
+          "
+        >
+          <h3>Đánh giá tour</h3>
+          <form id="ratingForm">
+            <input type="hidden" id="modalBookingID" />
+            <input type="hidden" id="modalTourID" />
+            <div>
+              <label for="ratingScore">Điểm (1-5):</label><br />
+              <input
+                type="number"
+                id="ratingScore"
+                name="ratingScore"
+                min="1"
+                max="5"
+                required
+              />
+            </div>
+            <div>
+              <label for="ratingComment">Nhận xét:</label><br />
+              <textarea
+                id="ratingComment"
+                name="ratingComment"
+                rows="4"
+                cols="40"
+                maxlength="500"
+              ></textarea>
+            </div>
+            <div style="margin-top: 10px">
+              <button type="submit">Gửi đánh giá</button>
+              <button type="button" id="closeModalBtn">Hủy</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </main>
+    <script>
+      async function fetchBookingHistory() {
         try {
-            const response = await fetch('/user/bookings');
-            if (!response.ok) {
-                alert('Lỗi khi tải lịch sử đơn đặt.');
-                return;
-            }
-            const bookings = await response.json();
-            const tbody = document.querySelector('#bookingHistoryTable tbody');
-            tbody.innerHTML = '';
-            bookings.forEach(booking => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
+          const response = await fetch("/user/bookings");
+          if (!response.ok) {
+            alert("Lỗi khi tải lịch sử đơn đặt.");
+            return;
+          }
+          const bookings = await response.json();
+          const tbody = document.querySelector("#bookingHistoryTable tbody");
+          tbody.innerHTML = "";
+          bookings.forEach((booking) => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
                     <td>${booking.BookingID}</td>
                     <td>${booking.TourName}</td>
-                    <td>${new Date(booking.BookingDate).toLocaleDateString('vi-VN')}</td>
-                    <td>${booking.PaymentStatus || 'Chưa thanh toán'}</td>
-                    <td><a href="/booking-detail/${booking.BookingID}">Xem chi tiết</a></td>
-                `;
-                tbody.appendChild(tr);
-            });
+                    <td>${new Date(booking.BookingDate).toLocaleDateString(
+                      "vi-VN"
+                    )}</td>
+                    <td>${booking.PaymentStatus || "Chua thanh toán"}</td>
+                <td>
+                  ${
+                    (booking.PaymentStatus || "Chua thanh toán") ===
+                    "Chua thanh toán"
+                      ? `<button type="button" onclick="cancelBooking('${booking.BookingID}')">Hủy đơn đặt</button>`
+                      : `<span style="color: gray;">Không thể hủy</span>`
+                  }
+                </td>
+                <td>
+                  <button type="button" onclick="openRatingModal('${
+                    booking.BookingID
+                  }', '${booking.TourID || ''}')">Đánh giá</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+          });
         } catch (error) {
-            console.error('Lỗi khi lấy lịch sử đơn đặt:', error);
+          console.error("Lỗi khi lấy lịch sử đơn đặt:", error);
         }
-    }
-    window.onload = fetchBookingHistory;
-</script>
-</body>
+      }
+      window.onload = fetchBookingHistory;
+
+      async function cancelBooking(bookingID) {
+        if (!confirm("Bạn có chắc muốn hủy đơn đặt này?")) return;
+
+        try {
+          const response = await fetch(`/user/bookings/${bookingID}/cancel`, {
+            method: "POST",
+          });
+          const result = await response.json();
+          if (result.success) {
+            alert("Hủy đơn đặt thành công!");
+            await fetchBookingHistory();
+          } else {
+            alert("Hủy đơn đặt thất bại: " + result.message);
+          }
+        } catch (error) {
+          alert("Lỗi khi hủy đơn đặt.");
+          console.error(error);
+        }
+      }
+      // Đóng modal đánh giá
+      document.getElementById("closeModalBtn").addEventListener("click", () => {
+        document.getElementById("ratingModal").style.display = "none";
+      });
+
+      // Xử lý gửi form đánh giá
+      document
+        .getElementById("ratingForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const bookingID = document.getElementById("modalBookingID").value;
+          const tourID = document.getElementById("modalTourID").value;
+          const rating = parseInt(document.getElementById("ratingScore").value);
+          const comment = document.getElementById("ratingComment").value.trim();
+
+          if (rating < 1 || rating > 5) {
+            alert("Điểm đánh giá phải từ 1 đến 5");
+            return;
+          }
+
+          try {
+            const response = await fetch("/api/reviews", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ bookingID, tourID, rating, comment }),
+            });
+            const result = await response.json();
+            if (response.ok) {
+              alert("Đánh giá đã được gửi thành công");
+              document.getElementById("ratingModal").style.display = "none";
+              // Reset form fields
+              document.getElementById("ratingScore").value = "";
+              document.getElementById("ratingComment").value = "";
+            } else {
+              alert("Lỗi khi gửi đánh giá: " + (result.error || ""));
+            }
+          } catch (error) {
+            alert("Lỗi khi gửi đánh giá");
+            console.error(error);
+          }
+        });
+
+      // Hàm mở modal đánh giá
+      function openRatingModal(bookingID, tourID) {
+        document.getElementById("modalBookingID").value = bookingID;
+        document.getElementById("modalTourID").value = tourID;
+        document.getElementById("ratingScore").value = "";
+        document.getElementById("ratingComment").value = "";
+        document.getElementById("ratingModal").style.display = "block";
+      }
+    </script>
+  </body>
 </html>

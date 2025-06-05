@@ -165,9 +165,20 @@
       </div>
     </section>
 
-    <div style="display: flex; gap: 40px; margin-top: 40px; max-width: 900px; margin-left: auto; margin-right: auto; justify-content: center; align-items: flex-start;">
+    <div
+      style="
+        display: flex;
+        gap: 40px;
+        margin-top: 40px;
+        max-width: 900px;
+        margin-left: auto;
+        margin-right: auto;
+        justify-content: center;
+        align-items: flex-start;
+      "
+    >
       <!-- Lịch trình Section -->
-      <section id="itinerary" style="flex: 1; max-width: 400px;">
+      <section id="itinerary" style="flex: 1; max-width: 400px">
         <h2 style="text-align: center; font-weight: bold; margin-bottom: 20px">
           LỊCH TRÌNH
         </h2>
@@ -177,93 +188,23 @@
       </section>
 
       <!-- Đánh giá tour -->
-      <section id="review-section" style="flex: 1; max-width: 400px;">
+      <section id="review-section" style="flex: 1; max-width: 400px">
         <h2 style="text-align: center; font-weight: bold; margin-bottom: 20px">
           ĐÁNH GIÁ TOUR
         </h2>
-    <div id="review-list">
-      <!-- Danh sách đánh giá sẽ được hiển thị ở đây -->
-      <p>Đang tải đánh giá...</p>
-    </div>
-
-    <script>
-      async function loadReviews() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const tourId = urlParams.get('tourId');
-        if (!tourId) {
-          document.getElementById('review-list').innerHTML = '<p>Không tìm thấy mã tour để tải đánh giá.</p>';
-          return;
-        }
-        try {
-          const response = await fetch(`/api/reviews/${tourId}`);
-          if (!response.ok) {
-            document.getElementById('review-list').innerHTML = '<p>Lỗi khi tải đánh giá.</p>';
-            return;
-          }
-          const reviews = await response.json();
-          if (reviews.length === 0) {
-            document.getElementById('review-list').innerHTML = '<p>Chưa có đánh giá nào.</p>';
-            return;
-          }
-          const reviewHtml = reviews.map(r => `
-            <div style="border-bottom: 1px solid #ccc; padding: 10px 0;">
-              <strong>${r.CustomerName}</strong> - <em>${new Date(r.CreatedAt).toLocaleDateString('vi-VN')}</em><br/>
-              Đánh giá: ${r.Rating} sao<br/>
-              Bình luận: ${r.Comment || 'Không có bình luận'}
-            </div>
-          `).join('');
-          document.getElementById('review-list').innerHTML = reviewHtml;
-        } catch (error) {
-          document.getElementById('review-list').innerHTML = '<p>Lỗi khi tải đánh giá.</p>';
-        }
-      }
-      window.onload = () => {
-        loadTourDetails();
-        loadReviews();
-      };
-    </script>
+        <div
+          id="review-list"
+          style="
+            min-height: 100px;
+            border: 1px solid #ddd;
+            padding: 10px;
+            background-color: #fff;
+          "
+        >
+          <!-- Danh sách đánh giá sẽ được hiển thị ở đây -->
+        </div>
       </section>
     </div>
-
-    <script>
-      document.getElementById('review-form').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        const rating = document.getElementById('rating').value;
-        const comment = document.getElementById('comment').value;
-        const urlParams = new URLSearchParams(window.location.search);
-        const tourId = urlParams.get('tourId');
-
-        // TODO: You need to get bookingID from user session or context
-        // For now, we will alert user to provide bookingID or implement logic to get it
-        const bookingID = null; // Placeholder
-
-        if (!bookingID) {
-          document.getElementById('review-message').style.color = 'red';
-          document.getElementById('review-message').textContent = 'Không tìm thấy mã đặt chỗ để đánh giá.';
-          return;
-        }
-
-        try {
-          const response = await fetch('/user/review', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ bookingID, rating, comment })
-          });
-          const data = await response.json();
-          if (response.ok) {
-            document.getElementById('review-message').style.color = 'green';
-            document.getElementById('review-message').textContent = data.message;
-            this.reset();
-          } else {
-            document.getElementById('review-message').style.color = 'red';
-            document.getElementById('review-message').textContent = data.error || 'Lỗi khi gửi đánh giá.';
-          }
-        } catch (error) {
-          document.getElementById('review-message').style.color = 'red';
-          document.getElementById('review-message').textContent = 'Lỗi khi gửi đánh giá.';
-        }
-      });
-    </script>
 
     <style>
       .itinerary-day {
@@ -306,6 +247,50 @@
     </style>
 
     <script>
+      async function loadReviews(tourId) {
+        console.log("loadReviews called with tourId:", tourId);
+        const reviewList = document.getElementById("review-list");
+
+        if (!tourId) {
+          reviewList.innerHTML =
+            "<p>Không tìm thấy mã tour để tải đánh giá.</p>";
+          return;
+        }
+
+        try {
+          const response = await fetch(`/api/reviews/${tourId}`);
+          if (!response.ok) {
+            reviewList.innerHTML =
+              "<p>Lỗi khi tải đánh giá (response not OK).</p>";
+            return;
+          }
+
+          const data = await response.json();
+          const reviews = Array.isArray(data) ? data : data.data || [];
+
+          if (!Array.isArray(reviews) || reviews.length === 0) {
+            reviewList.innerHTML = "<p>Chưa có đánh giá nào.</p>";
+            return;
+          }
+
+          const reviewHtml = reviews
+            .map((r, index) => {
+              console.log(`Review ${index}:`, r);
+              return `
+      <div style="border-bottom: 1px solid #ccc; padding: 10px 0;">
+        <strong>${r.CustomerName}</strong>
+        Đánh giá: ${r.Rating} sao<br/>
+        Bình luận: ${r.Comment || "Không có bình luận"}
+      </div>
+    `;
+            })
+            .join("");
+          reviewList.innerHTML = reviewHtml;
+        } catch (error) {
+          console.error("Lỗi khi gọi API:", error);
+          reviewList.innerHTML = "<p>Lỗi khi tải đánh giá.</p>";
+        }
+      }
       function renderItinerary(itineraries) {
         const container = document.getElementById("itinerary-list");
         container.innerHTML = "";
@@ -319,10 +304,16 @@
           dayDiv.innerHTML = `
         <div class="itinerary-day-header">
           <div>
-            <strong>Ngày ${item.day}:</strong> ${item.Title && item.Title.trim() !== "" ? item.Title : "Chưa cập nhật"}
+            <strong>Ngày ${item.day}:</strong> ${
+            item.Title && item.Title.trim() !== ""
+              ? item.Title
+              : "Chưa cập nhật"
+          }
           </div>
           <div>
-            <i class="fa-solid fa-utensils"></i> ${item.meals ? item.meals : "Chưa cập nhật"}
+            <i class="fa-solid fa-utensils"></i> ${
+              item.meals ? item.meals : "Chưa cập nhật"
+            }
             <i class="fa-solid fa-chevron-down" style="margin-left: 10px;"></i>
           </div>
         </div>
@@ -343,16 +334,23 @@
         });
       }
 
-      window.onload = () => {
-        loadTourDetails();
+      window.onload = async () => {
+        try {
+          const tourId = new URLSearchParams(window.location.search).get("tourId");
+          console.log("window.onload tourId:", tourId);
+          if (!tourId) {
+            alert("Không tìm thấy mã tour.");
+            return;
+          }
+          await loadTourDetails();
+          await loadReviews(tourId);
+        } catch (error) {
+          console.error("Lỗi trong window.onload:", error);
+        }
       };
     </script>
 
     <!-- It is recommended to replace /path/to/icon-*.svg with actual icon paths or use icon fonts -->
-
-    <script>
-      // Existing book-now-btn event listener code here
-    </script>
 
     <script>
       document
@@ -377,7 +375,7 @@
               return;
             } else if (data.role !== "customer") {
               alert("Bạn cần đăng nhập tài khoản khách hàng để đặt tour.");
-          } else {
+            } else {
               window.location.href = `/thongtin_thanhtoan?tourId=${encodeURIComponent(
                 tourId
               )}`;
@@ -484,7 +482,6 @@
 
           // Gọi renderItinerary với dữ liệu lịch trình thực tế
           renderItinerary(tour.itineraries);
-
         } catch (error) {
           alert("Lỗi khi tải chi tiết tour.");
           console.error(error);

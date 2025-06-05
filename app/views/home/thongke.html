@@ -86,15 +86,10 @@
 <div class="container">
   <h2>THỐNG KÊ TOUR ĐÃ ĐẶT</h2>
 
-  <form method="GET" action="/admin/thong-ke">
+  <form id="filterForm">
     <div>
-      <label for="fromDate">Từ ngày:</label><br>
-      <input type="date" id="fromDate" name="fromDate">
-    </div>
-
-    <div>
-      <label for="toDate">Đến ngày:</label><br>
-      <input type="date" id="toDate" name="toDate">
+      <label for="filterMonth">Tháng:</label><br>
+      <input type="month" id="filterMonth" name="filterMonth">
     </div>
 
     <div>
@@ -112,7 +107,7 @@
     </div>
 
     <div style="align-self: end;">
-      <button type="submit">Lọc kết quả</button>
+      <button type="button" id="filterBtn">Lọc kết quả</button>
     </div>
   </form>
 
@@ -137,9 +132,14 @@
 document.addEventListener('DOMContentLoaded', () => {
   const tbody = document.getElementById('booking-summary-body');
 
-  async function fetchBookingSummary() {
+  async function fetchBookingSummary(month = "", tourName = "", paymentStatus = "") {
     try {
-      const response = await fetch('/api/admin/bookings-summary');
+      const params = new URLSearchParams();
+      if (month) params.append("month", month);
+      if (tourName) params.append("tourName", tourName);
+      if (paymentStatus) params.append("paymentStatus", paymentStatus);
+
+      const response = await fetch('/api/admin/bookings-summary?' + params.toString());
       if (!response.ok) {
         throw new Error('Lỗi khi lấy dữ liệu thống kê');
       }
@@ -151,28 +151,40 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  function renderTable(data) {
-    if (!data || data.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="6">Không có dữ liệu</td></tr>';
-      return;
-    }
-    tbody.innerHTML = '';
-    data.forEach(item => {
-      const tr = document.createElement('tr');
+      function renderTable(data) {
+        if (!data || data.length === 0) {
+          tbody.innerHTML = '';
+          return;
+        }
+        tbody.innerHTML = '';
+        data.forEach(item => {
+          const tr = document.createElement('tr');
 
-      const statusClass = item.PaymentStatus === 'Đã thanh toán' ? 'status-paid' : 'status-unpaid';
+          const paymentStatusRaw = item.PaymentStatus || "";
+          const paymentStatusNormalized = paymentStatusRaw.normalize("NFC").replace(/Ð/g, "Đ").replace(/ð/g, "đ").trim();
+          const isPaid = paymentStatusNormalized === "Đã thanh toán";
 
-      tr.innerHTML = `
-        <td>${item.BookingID}</td>
-        <td>${item.CustomerName}</td>
-        <td>${item.TourName}</td>
-        <td>${new Date(item.BookingDate).toLocaleDateString('vi-VN')}</td>
-        <td>${item.NumberOfGuests}</td>
-        <td class="${statusClass}">${item.PaymentStatus}</td>
-      `;
-      tbody.appendChild(tr);
-    });
-  }
+          const statusClass = isPaid ? 'status-paid' : 'status-unpaid';
+
+          tr.innerHTML = `
+            <td>${item.BookingID}</td>
+            <td>${item.CustomerName}</td>
+            <td>${item.TourName}</td>
+            <td>${new Date(item.BookingDate).toLocaleDateString('vi-VN')}</td>
+            <td>${item.NumberOfGuests}</td>
+            <td class="${statusClass}">${item.PaymentStatus}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+  const filterBtn = document.getElementById('filterBtn');
+  filterBtn.addEventListener('click', () => {
+    const month = document.getElementById('filterMonth').value;
+    const tourName = document.getElementById('tourName').value.trim();
+    const paymentStatus = document.getElementById('status').value;
+    fetchBookingSummary(month, tourName, paymentStatus);
+  });
 
   fetchBookingSummary();
 });

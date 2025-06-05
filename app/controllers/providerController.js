@@ -95,7 +95,6 @@ router.get("/tours", async (req, res) => {
     res.status(500).send("Server error");
   }
 });
-
 router.put("/edit-tour/:tourID", async (req, res) => {
   try {
     const {
