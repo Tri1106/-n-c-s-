@@ -377,9 +377,13 @@ router.post("/thanh-toan", async (req, res) => {
         await request
           .input("BookingID_param2", sql.VarChar, bookingID)
           .input("NumberOfGuests", sql.Int, totalPeople)
+          .input("Adult", sql.Int, parseInt(adults) || 0)
+          .input("Child", sql.Int, parseInt(children) || 0)
           .query(`
             UPDATE Bookings
-            SET NumberOfGuests = @NumberOfGuests
+            SET NumberOfGuests = @NumberOfGuests,
+                Adult = @Adult,
+                Child = @Child
             WHERE BookingID = @BookingID_param2
           `);
 
