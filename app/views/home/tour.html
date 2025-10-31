@@ -187,11 +187,11 @@
           html += `
             <div class="tour-card">
               <div class="tour-image">
-                <img src="${tour.HinhAnh}" alt="Tour Image" />
+                <img src="${tour.ImageURL}" alt="Tour Image" />
               </div>
               <div class="tour-info">
-                <h2>${tour.TenTour}</h2>
-                <div class="tour-price">Giá: ${Number(tour.Gia).toLocaleString()} VNĐ</div>
+                <h2>${tour.TourName}</h2>
+                <div class="tour-price">Giá: ${Number(tour.Price).toLocaleString()} VNĐ</div>
                 <button class="view-btn" onclick="viewDetails('${tour.TourID}')">Xem Chi Tiết</button>
               </div>
             </div>

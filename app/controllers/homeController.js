@@ -149,9 +149,9 @@ router.get("/api/tours", async (req, res) => {
   try {
     const { departure, destination, date, budget, transport } = req.query;
     const pool = await connect();
-
+    console.log("📩 Query nhận từ client:", req.query);
     let query = `
-      SELECT TourID, ProviderID, TourName AS TenTour, Destination, Price AS Gia, Status, ImageURL AS HinhAnh, SoCho, IsFeatured
+      SELECT TourID, ProviderID, TourName , Destination, Price , Status, ImageURL , SoCho, IsFeatured
       FROM Tours
       WHERE 1=1
     `;
@@ -309,10 +309,19 @@ router.get("/payment-page", (req, res) => {
   res.sendFile(filePath);
 });
 
-
 router.post("/thanh-toan", async (req, res) => {
   try {
-    const { name, email, phone, address, tourID, bookingCode, amount, adults, children } = req.body;
+    const {
+      name,
+      email,
+      phone,
+      address,
+      tourID,
+      bookingCode,
+      amount,
+      adults,
+      children,
+    } = req.body;
 
     const pool = await connect();
 
@@ -328,7 +337,9 @@ router.post("/thanh-toan", async (req, res) => {
         // Kiểm tra xem UserID đã tồn tại trong Customers chưa
         const existingCustomerResult = await request
           .input("UserIDCheck", sql.VarChar, userID)
-          .query("SELECT CustomerID FROM Customers WHERE UserID = @UserIDCheck");
+          .query(
+            "SELECT CustomerID FROM Customers WHERE UserID = @UserIDCheck"
+          );
 
         let customerID;
         if (existingCustomerResult.recordset.length > 0) {
@@ -366,8 +377,7 @@ router.post("/thanh-toan", async (req, res) => {
         if (totalPeople > 0) {
           await request
             .input("TourID_param", sql.VarChar, tourID)
-            .input("SeatsToReduce", sql.Int, totalPeople)
-            .query(`
+            .input("SeatsToReduce", sql.Int, totalPeople).query(`
               UPDATE Tours
               SET SoCho = CASE WHEN SoCho >= @SeatsToReduce THEN SoCho - @SeatsToReduce ELSE 0 END
               WHERE TourID = @TourID_param
@@ -378,8 +388,7 @@ router.post("/thanh-toan", async (req, res) => {
           .input("BookingID_param2", sql.VarChar, bookingID)
           .input("NumberOfGuests", sql.Int, totalPeople)
           .input("Adult", sql.Int, parseInt(adults) || 0)
-          .input("Child", sql.Int, parseInt(children) || 0)
-          .query(`
+          .input("Child", sql.Int, parseInt(children) || 0).query(`
             UPDATE Bookings
             SET NumberOfGuests = @NumberOfGuests,
                 Adult = @Adult,
@@ -400,10 +409,13 @@ router.post("/thanh-toan", async (req, res) => {
         throw err;
       }
     } else if (bookingCode && amount) {
-      await pool.request()
+      await pool
+        .request()
         .input("BookingID", sql.VarChar, bookingCode)
         .input("Amount", sql.Decimal, amount)
-        .query("UPDATE Bookings SET PaidAmount = ISNULL(PaidAmount, 0) + @Amount, Status = 'Đã thanh toán' WHERE BookingID = @BookingID");
+        .query(
+          "UPDATE Bookings SET PaidAmount = ISNULL(PaidAmount, 0) + @Amount, Status = 'Đã thanh toán' WHERE BookingID = @BookingID"
+        );
 
       // Trả về phản hồi thành công
       res.json({ message: "Thanh toán thành công!" });
@@ -412,7 +424,9 @@ router.post("/thanh-toan", async (req, res) => {
     }
   } catch (err) {
     console.error("Lỗi khi xử lý đặt chỗ hoặc thanh toán:", err);
-    res.status(500).json({ message: "Lỗi server khi xử lý đặt chỗ hoặc thanh toán." });
+    res
+      .status(500)
+      .json({ message: "Lỗi server khi xử lý đặt chỗ hoặc thanh toán." });
   }
 });
 
@@ -424,8 +438,7 @@ router.get("/api/bookings/:bookingID", async (req, res) => {
     // Lấy thông tin booking
     const bookingResult = await pool
       .request()
-      .input("bookingID", sql.VarChar, bookingID)
-      .query(`
+      .input("bookingID", sql.VarChar, bookingID).query(`
         SELECT b.BookingID, b.BookingDate, b.TourID, b.CustomerID,
                c.Name AS CustomerName, c.Email, c.Phone, c.Address,
                t.TourName, t.Price, t.ImageURL, t.ThoiGianLyTuong
@@ -444,8 +457,7 @@ router.get("/api/bookings/:bookingID", async (req, res) => {
     // Lấy thông tin chuyến bay (Flights) theo TourID
     const flightsResult = await pool
       .request()
-      .input("tourID", sql.VarChar, booking.TourID)
-      .query(`
+      .input("tourID", sql.VarChar, booking.TourID).query(`
         SELECT FlightID, Airline, DeparturePoint, DestinationPoint, Price, DepartureDate, ReturnDate
         FROM Flights
         WHERE TourID = @tourID
@@ -466,10 +478,7 @@ router.get("/user/bookings", checkCustomerLogin, async (req, res) => {
     const userId = req.session.user.id;
 
     // Lấy danh sách booking của user
-    const result = await pool
-      .request()
-      .input("userId", userId)
-      .query(`
+    const result = await pool.request().input("userId", userId).query(`
         SELECT b.BookingID, t.TourName, b.BookingDate, 
                ISNULL(p.PaymentStatus, 'Chưa thanh toán') AS PaymentStatus
         FROM Bookings b
@@ -487,44 +496,68 @@ router.get("/user/bookings", checkCustomerLogin, async (req, res) => {
   }
 });
 
-router.post("/user/bookings/:bookingID/cancel", checkCustomerLogin, async (req, res) => {
-  const bookingID = req.params.bookingID;
-  try {
-    const pool = await connect();
+router.post(
+  "/user/bookings/:bookingID/cancel",
+  checkCustomerLogin,
+  async (req, res) => {
+    const bookingID = req.params.bookingID;
+    try {
+      const pool = await connect();
 
-    // Kiểm tra trạng thái thanh toán của booking và lấy CustomerID
-    const paymentResult = await pool.request()
-      .input("BookingID", bookingID)
-      .query(`
+      // Kiểm tra trạng thái thanh toán của booking và lấy CustomerID
+      const paymentResult = await pool.request().input("BookingID", bookingID)
+        .query(`
         SELECT TOP 1 PaymentStatus, CustomerID FROM Payments p
         JOIN Bookings b ON p.BookingID = b.BookingID
         WHERE p.BookingID = @BookingID ORDER BY p.PaymentID DESC
       `);
 
-    const paymentStatusRaw = paymentResult.recordset.length > 0 ? paymentResult.recordset[0].PaymentStatus : null;
-    const customerID = paymentResult.recordset.length > 0 ? paymentResult.recordset[0].CustomerID : null;
-    const paymentStatus = paymentStatusRaw ? paymentStatusRaw.normalize("NFC").replace(/Ð/g, "Đ").replace(/ð/g, "đ").trim() : "Chua thanh toán";
+      const paymentStatusRaw =
+        paymentResult.recordset.length > 0
+          ? paymentResult.recordset[0].PaymentStatus
+          : null;
+      const customerID =
+        paymentResult.recordset.length > 0
+          ? paymentResult.recordset[0].CustomerID
+          : null;
+      const paymentStatus = paymentStatusRaw
+        ? paymentStatusRaw
+            .normalize("NFC")
+            .replace(/Ð/g, "Đ")
+            .replace(/ð/g, "đ")
+            .trim()
+        : "Chua thanh toán";
 
-    if (paymentStatus === "Đã thanh toán") {
-      return res.status(400).json({ success: false, message: "Đơn đã thanh toán, không thể hủy." });
+      if (paymentStatus === "Đã thanh toán") {
+        return res.status(400).json({
+          success: false,
+          message: "Đơn đã thanh toán, không thể hủy.",
+        });
+      }
+
+      // Xóa booking
+      await pool
+        .request()
+        .input("BookingID", bookingID)
+        .query("DELETE FROM Bookings WHERE BookingID = @BookingID");
+
+      // Kiểm tra số lượng booking của customer sau khi xóa booking
+      const bookingCountResult = await pool
+        .request()
+        .input("CustomerID", customerID)
+        .query(
+          "SELECT COUNT(*) AS count FROM Bookings WHERE CustomerID = @CustomerID"
+        );
+
+      res.json({ success: true, message: "Đơn đặt đã được hủy thành công." });
+    } catch (err) {
+      console.error("Lỗi khi hủy đơn đặt:", err);
+      res
+        .status(500)
+        .json({ success: false, message: "Lỗi server khi hủy đơn đặt." });
     }
-
-    // Xóa booking
-    await pool.request()
-      .input("BookingID", bookingID)
-      .query("DELETE FROM Bookings WHERE BookingID = @BookingID");
-
-    // Kiểm tra số lượng booking của customer sau khi xóa booking
-    const bookingCountResult = await pool.request()
-      .input("CustomerID", customerID)
-      .query("SELECT COUNT(*) AS count FROM Bookings WHERE CustomerID = @CustomerID");
-
-    res.json({ success: true, message: "Đơn đặt đã được hủy thành công." });
-  } catch (err) {
-    console.error("Lỗi khi hủy đơn đặt:", err);
-    res.status(500).json({ success: false, message: "Lỗi server khi hủy đơn đặt." });
   }
-});
+);
 
 router.get("/api/popular-tours", async (req, res) => {
   try {
@@ -541,18 +574,18 @@ router.get("/api/popular-tours", async (req, res) => {
   }
 });
 
-const { v4: uuidv4 } = require('uuid');
+const { v4: uuidv4 } = require("uuid");
 
 // API lưu đánh giá tour
-router.post('/api/reviews', async (req, res) => {
+router.post("/api/reviews", async (req, res) => {
   if (!req.session.user) {
-    return res.status(401).json({ error: 'Bạn cần đăng nhập để đánh giá' });
+    return res.status(401).json({ error: "Bạn cần đăng nhập để đánh giá" });
   }
   const { bookingID, tourID, rating, comment } = req.body;
   const userID = req.session.user.id;
 
   if (!bookingID || !rating) {
-    return res.status(400).json({ error: 'Thiếu thông tin bắt buộc' });
+    return res.status(400).json({ error: "Thiếu thông tin bắt buộc" });
   }
 
   try {
@@ -560,51 +593,56 @@ router.post('/api/reviews', async (req, res) => {
     const reviewID = uuidv4();
 
     // Lấy CustomerID từ bảng Customers dựa trên userID
-    const customerResult = await pool.request()
-      .input('UserID', sql.VarChar(50), userID)
-      .query('SELECT CustomerID FROM Customers WHERE UserID = @UserID');
+    const customerResult = await pool
+      .request()
+      .input("UserID", sql.VarChar(50), userID)
+      .query("SELECT CustomerID FROM Customers WHERE UserID = @UserID");
 
     if (customerResult.recordset.length === 0) {
-      return res.status(400).json({ error: 'Không tìm thấy khách hàng tương ứng' });
+      return res
+        .status(400)
+        .json({ error: "Không tìm thấy khách hàng tương ứng" });
     }
 
     const customerID = customerResult.recordset[0].CustomerID;
 
     // Lấy TourID từ bảng Bookings dựa trên bookingID
-    const bookingResult = await pool.request()
-      .input('BookingID', sql.VarChar(50), bookingID)
-      .query('SELECT TourID FROM Bookings WHERE BookingID = @BookingID');
+    const bookingResult = await pool
+      .request()
+      .input("BookingID", sql.VarChar(50), bookingID)
+      .query("SELECT TourID FROM Bookings WHERE BookingID = @BookingID");
 
     if (bookingResult.recordset.length === 0) {
-      return res.status(400).json({ error: 'Không tìm thấy đơn đặt tương ứng' });
+      return res
+        .status(400)
+        .json({ error: "Không tìm thấy đơn đặt tương ứng" });
     }
 
     const actualTourID = bookingResult.recordset[0].TourID;
 
-    await pool.request()
-      .input('ReviewID', sql.NVarChar(36), reviewID)
-      .input('CustomerID', sql.VarChar(15), customerID)
-      .input('TourID', sql.NVarChar(50), actualTourID)
-      .input('Rating', sql.Int, rating)
-      .input('Comment', sql.NVarChar(255), comment || null)
-      .query(`
+    await pool
+      .request()
+      .input("ReviewID", sql.NVarChar(36), reviewID)
+      .input("CustomerID", sql.VarChar(15), customerID)
+      .input("TourID", sql.NVarChar(50), actualTourID)
+      .input("Rating", sql.Int, rating)
+      .input("Comment", sql.NVarChar(255), comment || null).query(`
         INSERT INTO Reviews (ReviewID, CustomerID, TourID, Rating, Comment)
         VALUES (@ReviewID, @CustomerID, @TourID, @Rating, @Comment)
       `);
 
-    res.json({ success: true, message: 'Đánh giá đã được lưu' });
+    res.json({ success: true, message: "Đánh giá đã được lưu" });
   } catch (err) {
-    console.error('Lỗi khi lưu đánh giá:', err);
-    res.status(500).json({ error: 'Lỗi server khi lưu đánh giá' });
+    console.error("Lỗi khi lưu đánh giá:", err);
+    res.status(500).json({ error: "Lỗi server khi lưu đánh giá" });
   }
 });
 
-router.get('/api/reviews/:tourId', async (req, res) => {
+router.get("/api/reviews/:tourId", async (req, res) => {
   const tourId = req.params.tourId;
   try {
     const pool = await connect();
-    const result = await pool.request()
-      .input('TourID', sql.VarChar(50), tourId)
+    const result = await pool.request().input("TourID", sql.VarChar(50), tourId)
       .query(`
         SELECT r.ReviewID, r.Rating, r.Comment, c.Name AS CustomerName
         FROM Reviews r
@@ -613,8 +651,8 @@ router.get('/api/reviews/:tourId', async (req, res) => {
       `);
     res.json(result.recordset);
   } catch (err) {
-    console.error('Lỗi khi lấy đánh giá:', err);
-    res.status(500).json({ error: 'Lỗi server khi lấy đánh giá' });
+    console.error("Lỗi khi lấy đánh giá:", err);
+    res.status(500).json({ error: "Lỗi server khi lấy đánh giá" });
   }
 });
 
